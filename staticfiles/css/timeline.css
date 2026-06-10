@@ -1,0 +1,91 @@
+/* ===== پست‌ها ===== */
+.post-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+    transition: all 0.3s;
+}
+
+.post-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.post-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.post-author {
+    font-weight: bold;
+    color: #1f2937;
+}
+
+.post-time {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.post-content {
+    color: #374151;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.post-actions {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.post-actions a {
+    color: #6b7280;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: all 0.2s;
+}
+
+.post-actions a:hover {
+    color: #3b82f6;
+}
+
+.post-actions a.liked {
+    color: #ef4444;
+}
+
+/* ===== کامنت‌ها ===== */
+.comment-item {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.comment-item strong {
+    color: #1f2937;
+    font-size: 0.85rem;
+}
+
+.comment-item .comment-text {
+    font-size: 0.85rem;
+    color: #4b5563;
+}
+
+.comment-item .comment-time {
+    font-size: 0.7rem;
+    color: #9ca3af;
+}

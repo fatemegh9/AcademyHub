@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}آپلود جزوه جدید{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4>📤 آپلود جزوه جدید</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="id_title" class="form-label">عنوان جزوه *</label>
+                        <input type="text" name="title" id="id_title" class="form-control" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_description" class="form-label">توضیحات</label>
+                        <textarea name="description" id="id_description" class="form-control" rows="4"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_lesson_name" class="form-label">نام درس *</label>
+                        <input type="text" name="lesson_name" id="id_lesson_name" class="form-control" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_professor_name" class="form-label">نام استاد</label>
+                        <input type="text" name="professor_name" id="id_professor_name" class="form-control">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_tags_input" class="form-label">تگ‌ها</label>
+                        <textarea name="tags_input" id="id_tags_input" class="form-control" rows="3" placeholder="هر تگ را در یک خط بنویسید:&#10;ریاضی&#10;فیزیک&#10;برنامه نویسی"></textarea>
+                        <small class="form-text text-muted">هر تگ را در یک خط جداگانه وارد کنید</small>
+                    </div>
+
+
+                    <div class="mb-3">
+                        <label for="id_file" class="form-label">فایل جزوه (PDF, DOC, ...) *</label>
+                        <input type="file" name="file" id="id_file" class="form-control" required>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">📤 آپلود</button>
+                        <a href="{% url 'note_list' %}" class="btn btn-secondary">🔙 بازگشت</a>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">مقطع تحصیلی</label>
+                        <select name="level" class="form-select">
+                            <option value="">انتخاب کنید...</option>
+                            <option value="associate">کاردانی</option>
+                            <option value="bachelor">کارشناسی</option>
+                            <option value="master">کارشناسی ارشد</option>
+                            <option value="phd">دکتری</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">نوع جزوه</label>
+                        <select name="note_type" class="form-select">
+                            <option value="">انتخاب کنید...</option>
+                            <option value="handwritten">دستنویس</option>
+                            <option value="typed">تایپی</option>
+                            <option value="slide">اسلاید</option>
+                            <option value="exam">نمونه سوال</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">دانشگاه</label>
+                        <select name="university" class="form-select">
+                            <option value="">انتخاب کنید...</option>
+                            <option value="tehran">دانشگاه تهران</option>
+                            <option value="sharif">صنعتی شریف</option>
+                            <option value="azad">آزاد</option>
+                            <option value="pnu">پیام نور</option>
+                        </select>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

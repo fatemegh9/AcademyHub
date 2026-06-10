@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block title %}اعلان‌ها{% endblock %}
+{% block content %}
+
+<style>
+.notif-wrap {
+    max-width: 600px;
+    margin: 10px;
+    padding: 1.5rem 0;
+}
+.notif-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+.notif-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #122248;
+}
+.notif-badge {
+    background: #EEEDFE;
+    color: #3C3489;
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 500;
+}
+.notif-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 16px;
+    margin-bottom: 10px;
+    transition: box-shadow 0.2s, border-color 0.2s;
+}
+.notif-item.unread {
+    border-right: 3px solid #7F77DD;
+    background: #FAFAFA;
+}
+.notif-item:hover {
+    box-shadow: 0 4px 16px rgba(18,34,72,0.08);
+    border-color: #c5c5e8;
+}
+.notif-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #EEEDFE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: bold;
+    color: #3C3489;
+    flex-shrink: 0;
+}
+.notif-body { flex: 1; }
+.notif-text {
+    font-size: 14px;
+    color: #222;
+    margin: 0 0 5px;
+    line-height: 1.5;
+}
+.notif-text strong { color: #122248; }
+.notif-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: #999;
+}
+.notif-meta a {
+    color: #534AB7;
+    text-decoration: none;
+}
+.notif-meta a:hover { text-decoration: underline; }
+.notif-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 15px;
+}
+.icon-like    { background: #FBEAF0; }
+.icon-comment { background: #E6F1FB; }
+.read-btn {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    background: transparent;
+    color: #666;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.read-btn:hover { background: #f5f5f5; }
+</style>
+
+<div class="notif-wrap">
+    <div class="notif-header">
+        <div class="notif-title">🔔 اعلان‌ها</div>
+        {% with unread=notifications|length %}
+        {% if unread %}
+        <span class="notif-badge">{{ unread }} اعلان</span>
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    {% if notifications %}
+        {% for notification in notifications %}
+        <div class="notif-item {% if not notification.is_read %}unread{% endif %}">
+
+            <div class="notif-avatar">
+                {{ notification.sender.username|slice:":2" }}
+            </div>
+
+            <div class="notif-body">
+                <p class="notif-text">
+                    <strong>{{ notification.sender.username }}</strong>
+                    {% if notification.notification_type == 'like' %}
+                        به پست شما لایک کرد
+                    {% elif notification.notification_type == 'comment' %}
+                        روی پست شما کامنت گذاشت
+                    {% elif notification.notification_type == 'comment_like' %}
+                        به کامنت شما لایک کرد
+                    {% else %}
+                        اعلان جدید دارید
+                    {% endif %}
+                </p>
+                <div class="notif-meta">
+                    🕐 {{ notification.created_at|timesince }} پیش
+                    {% if notification.post %}
+                    · <a href="{% url 'timeline' %}">مشاهده پست</a>
+                    {% endif %}
+                    {% if not notification.is_read %}
+                    · <a href="{% url 'mark_notification_read' notification.id %}" class="read-btn">✓ خوانده شد</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="notif-icon {% if notification.notification_type == 'like' or notification.notification_type == 'comment_like' %}icon-like{% else %}icon-comment{% endif %}">
+                {% if notification.notification_type == 'comment' %}💬{% else %}❤️{% endif %}
+            </div>
+
+        </div>
+        {% endfor %}
+    {% else %}
+        <div style="text-align:center; padding: 3rem; color: #aaa;">
+            <div style="font-size:40px; margin-bottom:10px;">🔔</div>
+            هیچ اعلانی وجود ندارد
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

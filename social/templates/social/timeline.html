@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}تایم‌لاین{% endblock %}
+
+{% block content %}
+<!-- بخش استوری‌ها -->
+<div class="stories-container mb-4">
+    <div class="d-flex gap-3 overflow-auto pb-2">
+        
+<!-- استوری خود کاربر -->
+<div class="stories-container mb-4" style="overflow-x: auto; white-space: nowrap;">
+    <div style="display: inline-flex; gap: 16px; direction: rtl;">
+        
+        <!-- استوری خود کاربر (همان آیکون پروفایل) -->
+<div id="my-story" class="story-item text-center" style="min-width: 80px; flex-shrink: 0; cursor: pointer;">
+    <div id="myStoryRing" class="story-ring">
+        <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}/media/profiles/default.png{% endif %}" 
+             alt="avatar" style="width: 70px; height: 70px; object-fit: cover;">
+    </div>
+    <small class="text-muted d-block mt-1">تو</small>
+    <div class="plus-icon">+</div>
+    
+    <!-- فرم مخفی برای آپلود استوری -->
+    <form id="storyUploadForm" method="post" action="{% url 'create_story' %}" enctype="multipart/form-data" style="display: none;">
+        {% csrf_token %}
+        <input type="file" name="image" id="storyFileInput" accept="image/*" onchange="this.form.submit()">
+        <textarea name="text" style="display: none;">📸 استوری جدید</textarea>
+    </form>
+</div>
+        
+        <!-- استوری‌های کاربران دیگر -->
+        <div id="stories-list" style="display: inline-flex; gap: 16px;"></div>
+        
+    </div>
+</div>
+</div>
+
+<!-- مودال نمایش استوری -->
+<div id="storyModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999;">
+    <div style="position: relative; top: 50%; transform: translateY(-50%); margin: 0 auto; max-width: 500px; background: #1a1a1a; border-radius: 16px;">
+        <div style="position: relative; padding: 20px; color: white;">
+            <button onclick="closeStoryModal()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; font-size: 24px; cursor: pointer;">✖</button>
+            
+            <!-- دکمه حذف استوری (فقط برای استوری خود کاربر) -->
+            <button id="deleteStoryBtn" onclick="deleteCurrentStory()" style="position: absolute; bottom: 10px; left: 10px; background: #dc3545; border: none; color: white; padding: 5px 10px; border-radius: 8px; cursor: pointer; display: none;">
+                🗑️ حذف استوری
+            </button>
+            
+            <div id="storyCarouselInner" style="text-align: center;"></div>
+            <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                <button onclick="prevStory()" style="background: rgba(0,0,0,0.5); border: none; color: white; padding: 10px 20px; cursor: pointer;">◀ قبلی</button>
+                <button onclick="nextStory()" style="background: rgba(0,0,0,0.5); border: none; color: white; padding: 10px 20px; cursor: pointer;">بعدی ▶</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="create-post-card">
+
+    <img
+        src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}/media/profiles/default.png{% endif %}"
+        class="post-avatar"
+    >
+
+    <a href="{% url 'create_post' %}" class="create-post-btn">
+        امروز چه چیزی می‌خواهی به اشتراک بگذاری؟
+    </a>
+
+</div>
+
+<!-- پست‌ها -->
+ <div class="posts-grid">
+{% for post in posts %}
+<div class="post-card">
+
+    <div class="post-header-mini">
+
+    <img src="{% if post.author.profile_picture %}{{ post.author.profile_picture.url }}{% else %}/media/profiles/default.png{% endif %}"
+         class="post-avatar-mini">
+
+    <div class="post-user-info">
+        <div class="post-author-mini">
+            {{ post.author.username }}
+        </div>
+
+        <div class="post-time-mini">
+            {{ post.created_at|timesince }} قبل
+        </div>
+    </div>
+    <div class="post-menu-wrapper">
+        <button class="post-menu-btn" onclick="toggleMenu(this)">⋯</button>
+
+        <div class="post-menu">
+            <a href="{% url 'save_post' post.id %}">🔖 ذخیره</a>
+
+            {% if request.user == post.author %}
+                <a href="{% url 'edit_post' post.id %}">✏️ ویرایش</a>
+                <a href="{% url 'delete_post' post.id %}">🗑️ حذف</a>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+    <a href="{% url 'post_detail' post.id %}" class="post-link">
+     <!-- نمایش عکس (اصلی) -->
+    {% if post.image %}
+    <div class="mt-2">
+       <img src="{{ post.image.url }}"
+     alt="پست تصویری"
+     class="post-image">
+    </div>
+    {% endif %}
+    
+    <!-- نمایش کپشن (متن) زیر عکس -->
+    {% if post.content %}
+    <div class="post-content mt-3">
+        {{ post.content }}
+    </div>
+    {% endif %}
+</a>
+    <div class="post-actions">
+        <a href="{% url 'like_post' post.id %}" class="d-inline-flex align-items-center gap-1">
+            <img src="{% static 'icons/heart.svg' %}" alt="لایک" class="icon-sm"> ❤️ {{ post.likes.count }}  
+        </a>
+        <a href="#comment-{{ post.id }}" class="d-inline-flex align-items-center gap-1">
+            <img src="{% static 'icons/message.svg' %}" alt="کامنت" class="icon-sm"> 💬 {{ post.comments.count }}
+        </a>
+        
+    </div>
+
+    {% if request.user != post.author %}
+        <a href="{% url 'save_post' post.id %}">
+        🔖
+    </a>
+    {% endif %}
+
+
+    <!-- کامنت‌ها -->
+    <div class="mt-3">
+        {% for comment in post.comments.all|slice:":3" %}
+      <div class="comment-item">
+
+    <div class="comment-top">
+        <span class="comment-user">
+            {{ comment.user.username }}
+        </span>
+
+        {% if request.user == comment.user or request.user.is_superuser %}
+        {% for comment in post.comments.all %}
+   <a href="#" class="delete-comment" onclick="deleteComment('{{ comment.id }}', this); return false;">
+    حذف
+</a>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="comment-text">
+        {{ comment.text }}
+    </div>
+
+</div>
+        {% endfor %}
+        <form method="post"
+      action="{% url 'add_comment' post.id %}"
+      class="comment-form">
+
+    {% csrf_token %}
+
+    <input type="text"
+           name="text"
+           placeholder="نظر خودت رو بنویس...">
+
+    <button type="submit">
+        ارسال
+    </button>
+
+</form>
+    </div>
+</div>
+{% empty %}
+
+{% endfor %}
+
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("دستي صدا زدن loadStories");
+        loadStories();
+    });
+</script>
+{% endblock %}

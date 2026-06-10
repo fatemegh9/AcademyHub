@@ -1,0 +1,164 @@
+/* کانتینر اصلی استوری‌ها */
+.stories-container {
+    background: white;
+    border-radius: 16px;
+    padding: 12px;
+    box-shadow: 0 1px 3px #14203c;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    scrollbar-width: thin;
+    direction: rtl;
+    margin-bottom: 30px;
+    transition: all 0.3s
+}
+
+/* محفظه داخلی استوری‌ها */
+.stories-wrapper {
+    display: inline-flex;
+    gap: 16px;
+    direction: rtl;
+}
+
+/* هر آیتم استوری */
+.story-item {
+    display: inline-block;
+    vertical-align: top;
+    white-space: normal;
+    flex-shrink: 0;
+    text-align: center;
+}
+
+.story-item small {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #6c757d;
+    white-space: normal;
+    word-break: keep-all;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70px;
+}
+
+/* حلقه رنگی دور استوری (مثل اینستاگرام) */
+.story-ring{
+    width:76px;
+    height:76px;
+
+    border-radius:50%;
+
+    padding:3px;
+
+   background: linear-gradient(
+    135deg,
+    #122248,
+    #2956b2,
+    #4f8cff,
+    #122248
+);
+}
+
+.story-ring img{
+    width:100%;
+    height:100%;
+    border-radius:50%;
+    border:3px solid white;
+}
+.story-ring.has-story {
+    background: linear-gradient(135deg, #122248, #2956b2);
+    padding: 3px;
+}
+
+.story-ring.no-story {
+    background: #6c757d;
+    padding: 3px;
+}
+
+/* استوری خود کاربر */
+.story-avatar-add {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.story-avatar-add .story-ring {
+    background: none;
+    padding: 0;
+}
+
+.story-avatar-add .story-ring img {
+    border: 2px solid #3b82f6;
+}
+
+/* آیکون + برای استوری خود کاربر */
+.plus-icon {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: #3b82f6;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    border: 2px solid white;
+}
+
+/* هاور افکت */
+.story-item {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.story-item:hover {
+    transform: scale(1.05);
+}
+
+/* وقتی استوری ندارد */
+.story-ring.no-story {
+    background: #6c757d;
+}
+
+/* اسکرول مخفی برای مرورگرهای وب‌کیت */
+.stories-container::-webkit-scrollbar {
+    height: 3px;
+}
+
+.stories-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.stories-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+#my-story{
+    position:relative;
+}
+
+.plus-icon{
+    position:absolute;
+    bottom:20px;
+    right:0;
+
+    width:22px;
+    height:22px;
+
+    border-radius:50%;
+
+    background:#2563eb;
+    color:white;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-weight:bold;
+}

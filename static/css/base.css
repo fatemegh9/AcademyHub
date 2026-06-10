@@ -1,0 +1,69 @@
+/* ===== تنظیمات پایه ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #f0f2f5;
+    font-family: 'Vazir', 'Tahoma', sans-serif;
+}
+
+/* محتوای اصلی */
+.main-content {
+    margin-right: 260px;
+    padding: 1.5rem;
+    min-height: 100vh;
+    transition: margin-right 0.3s ease;
+}
+
+.sidebar.collapsed + .main-content {
+    margin-right: 70px;
+}
+
+/* ===== ریسپانسیو ===== */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 70px;
+        padding: 1rem 0.5rem;
+    }
+    .sidebar-header h3,
+    .sidebar-user-info,
+    .sidebar-menu span:not(i) {
+        display: none;
+    }
+    .sidebar-user {
+        justify-content: center;
+    }
+    .main-content {
+        margin-right: 70px;
+    }
+    .toggle-btn {
+        display: none;
+    }
+}
+
+
+/* سایدبار افقی رشته‌ها */
+.fields-bar {
+    padding: 8px 16px !important;
+    border-radius: 12px;
+    background-color: #f8f9fa;
+}
+
+.fields-bar .btn-sm {
+    padding: 4px 12px;
+    font-size: 0.8rem;
+    border-radius: 20px;
+}
+
+.fields-bar .btn-primary {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.fields-bar .btn-outline-secondary {
+    border: 1px solid #ced4da;
+    color: #6c757d;
+}

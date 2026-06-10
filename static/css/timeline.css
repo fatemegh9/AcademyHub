@@ -1,0 +1,380 @@
+body{
+    background: linear-gradient(180deg, #f5f7ff 0%, #eef2ff 100%);
+}
+.create-post-card{
+    background:white;
+    border-radius:18px;
+    padding:15px;
+    margin-bottom:25px;
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    box-shadow:0 8px 30px rgba(0,0,0,.07);
+}
+
+.create-post-btn{
+    flex:1;
+    background:#f3f4f6;
+    padding:12px;
+    border-radius:30px;
+    text-decoration:none;
+    color:#666;
+}
+
+/* ===== پست‌ها ===== */
+
+.posts-grid{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+/* هر پست */
+.post-card{
+    display: inline-block;
+    width: 100%;
+
+    margin-bottom: 16px;
+
+    background: #fff;
+    border-radius: 16px;
+    padding: 12px;
+
+    box-shadow: 0 6px 18px rgba(0,0,0,.06);
+
+    transition: .2s ease;
+}
+
+.post-card:hover{
+    transform: translateY(-3px);
+}
+
+.post-image{
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+.post-header-mini{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+    padding:8px 10px;
+    background:#f9fafb;
+    border-radius:12px;
+    border:1px solid #eee;
+    gap:8px;
+}
+
+.post-avatar-mini{
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    object-fit:cover;
+}
+
+.post-user-info{
+    flex:1;
+    margin-left:10px;
+}
+
+.post-author-mini{
+    font-size:10px;
+    font-weight:600;
+    color:#111827;
+}
+
+.post-time-mini{
+    font-size:11px;
+    color:#9ca3af;
+}
+
+.post-menu-btn{
+    background:none;
+    border:none;
+    font-size:18px;
+    cursor:pointer;
+    color:#6b7280;
+}
+
+.post-avatar{
+    width:52px;
+    height:52px;
+    border-radius:50%;
+    object-fit:cover;
+}
+
+.post-author {
+    font-weight: bold;
+    color: #1f2937;
+}
+
+.post-time {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.post-content{
+    margin-top:10px;
+    padding:10px;
+    background:#f9fafb;
+    border-radius:8px;
+    font-size:13px;
+    text-decoration:none !important;
+    color:#374151;
+    line-height:1.7;
+
+    position: relative; /* مهم */
+}
+
+/* خط گرادیانی سمت راست */
+.post-content::after{
+    content:"";
+    position:absolute;
+    top:0;
+    right:0;
+    width:3px;
+    height:100%;
+    border-radius:8px;
+
+    background: linear-gradient(135deg,#122248,#1d3b7a);
+}
+
+.post-link{
+    text-decoration:none;
+    color:inherit;
+}
+
+.post-link:hover{
+    text-decoration:none;
+}
+
+.post-actions{
+    margin-top:10px;
+
+    display:flex;
+    justify-content:space-evenly;
+    align-items:center;
+
+    padding:8px;
+
+    background:#f8fafc;
+
+    border:1px solid #e5e7eb;
+
+    border-radius:10px;
+}
+
+.post-actions a{
+    text-decoration:none;
+    color:#64748b;
+
+    font-size:13px;
+    font-weight:500;
+    text-decoration:none  !important;
+    transition:.2s;
+}
+
+.post-actions a:hover{
+    color:#4f46e5;
+    transform:translateY(-1px);
+}
+
+.post-actions a.liked {
+    color: #ef4444;
+}
+
+.post-owner-actions{
+    margin-top:10px;
+
+    display:flex;
+    gap:8px;
+
+    padding:8px;
+
+    background:#f8fafc;
+
+    border:1px solid #e5e7eb;
+
+    border-radius:10px;
+}
+
+.btn-outline-warning,
+.btn-outline-danger{
+
+    border:none !important;
+
+    border-radius:8px !important;
+
+    font-size:12px !important;
+
+    padding:6px 10px !important;
+
+    background:#eef2ff !important;
+    text-decoration:none  !important;
+
+    color:linear-gradient(135deg,#122248,#1d3b7a) !important;
+}
+
+.btn-outline-danger{
+    background:#fef2f2 !important;
+    color:#dc2626 !important;
+}
+
+.post-menu-wrapper{
+    position: relative;
+}
+
+.post-menu-btn{
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.post-menu{
+    position: absolute;
+    top: 30px;
+    right: 0;
+
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.1);
+
+    display: none;
+    flex-direction: column;
+    min-width: 140px;
+    overflow: hidden;
+    z-index: 10;
+}
+
+.post-menu a{
+    padding: 10px;
+    text-decoration: none;
+    color: #333;
+    font-size: 13px;
+}
+
+.post-menu a:hover{
+    background: #f3f4f6;
+}
+@media (max-width:1200px){
+    .posts-grid{
+        grid-template-columns: repeat(3,1fr);
+    }
+}
+
+@media (max-width:768px){
+    .posts-grid{
+        grid-template-columns: repeat(2,1fr);
+    }
+}
+
+@media (max-width:480px){
+    .posts-grid{
+        grid-template-columns: repeat(1,1fr);
+    }
+}
+
+/* ===== کامنت‌ها ===== */
+.comment-item{
+    background:#f8fafc;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+
+    padding:8px 10px;
+    margin-bottom:8px;
+}
+
+.comment-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    margin-bottom:4px;
+}
+
+.comment-user{
+    font-size:12px;
+    font-weight:600;
+    color:linear-gradient(135deg,#122248,#1d3b7a);
+}
+
+.comment-text{
+    font-size:13px;
+    color:#374151;
+    line-height:1.5;
+}
+
+.comment-delete{
+    font-size:11px;
+    color:#ef4444;
+    text-decoration:none;
+}
+
+.comment-delete:hover{
+    text-decoration:underline;
+}
+
+.comment-form{
+    display:flex;
+    gap:8px;
+
+    margin-top:12px;
+}
+
+.comment-form input{
+    flex:1;
+
+    border:none;
+
+    background:#f8fafc;
+
+    padding:10px 14px;
+
+    border-radius:10px;
+
+    border:1px solid #e5e7eb;
+
+    outline:none;
+}
+
+.comment-form input:focus{
+    border-color:linear-gradient(135deg,#122248,#1d3b7a);
+}
+
+.comment-form button{
+    border:none;
+
+    background:linear-gradient(135deg,#122248,#1d3b7a);
+
+    color:white;
+
+    padding:10px 16px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    transition:.2s;
+}
+
+.comment-form button:hover{
+    transform:translateY(-1px);
+}
+
+.delete-comment {
+    color: #9ca3af;
+    text-decoration: none !important;
+    font-size: 1px;
+    transition: .2s;
+}
+
+.delete-comment:hover {
+    color: #ef4444;
+}

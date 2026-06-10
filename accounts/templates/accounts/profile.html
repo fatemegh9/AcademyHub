@@ -1,0 +1,460 @@
+{% extends 'base.html' %}
+{% block title %}پروفایل{% endblock %}
+
+
+{% block content %}
+<style>
+/* =========================
+   Profile Container
+========================= */
+
+.profile-container{
+    width:100%;
+    max-width:none;
+    padding:20px 30px;
+}
+
+/* =========================
+   Header
+========================= */
+
+.profile-top{
+    display:flex;
+    align-items:center;
+    gap:50px;
+
+    padding:35px 0;
+
+    border-bottom:1px solid #e5e7eb;
+
+    margin-bottom:25px;
+}
+
+.profile-left{
+    flex-shrink:0;
+}
+
+.profile-avatar{
+    width:140px;
+    height:140px;
+
+    border-radius:50%;
+    object-fit:cover;
+
+    padding:4px;
+
+    background:linear-gradient(
+        135deg,
+        #122248,
+        #1d3b7a
+    );
+}
+
+.profile-right{
+    flex:1;
+}
+
+.profile-username-row{
+    display:flex;
+    align-items:center;
+    gap:15px;
+
+    margin-bottom:20px;
+}
+
+.profile-username{
+    font-size:28px;
+    font-weight:500;
+    color:#111827;
+}
+
+.edit-btn{
+    background:#f3f4f6;
+
+    color:#111827;
+
+    text-decoration:none;
+
+    border-radius:8px;
+
+    padding:8px 16px;
+
+    font-size:14px;
+
+    transition:.2s;
+}
+
+.edit-btn:hover{
+    background:#e5e7eb;
+}
+
+/* =========================
+   Stats
+========================= */
+
+.profile-stats{
+    display:flex;
+    gap:40px;
+
+    margin-bottom:20px;
+}
+
+.profile-stats span{
+    font-size:15px;
+    color:#374151;
+}
+
+.profile-stats b{
+    color:#111827;
+    font-size:16px;
+}
+
+/* =========================
+   Info
+========================= */
+
+.profile-name{
+    font-size:15px;
+    font-weight:700;
+
+    color:#111827;
+
+    margin-bottom:8px;
+}
+
+.profile-bio{
+    font-size:14px;
+
+    color:#374151;
+
+    line-height:1.8;
+
+    max-width:550px;
+
+    margin-bottom:10px;
+}
+
+.profile-extra{
+    font-size:14px;
+
+    color:#6b7280;
+
+    line-height:1.9;
+}
+
+/* =========================
+   Tabs
+========================= */
+
+.profile-tabs{
+    display:flex;
+    justify-content:center;
+
+    gap:40px;
+
+    border-top:1px solid #e5e7eb;
+
+    margin-bottom:20px;
+}
+
+.profile-tabs button{
+    background:none;
+
+    border:none;
+
+    padding:15px 0;
+
+    cursor:pointer;
+
+    font-size:12px;
+
+    font-weight:600;
+
+    color:#9ca3af;
+
+    border-top:2px solid transparent;
+
+    transition:.2s;
+}
+
+.profile-tabs button.active{
+    color:#111827;
+
+    border-top:2px solid #122248;
+}
+
+.profile-tabs button i{
+    font-size: 28px;
+}
+
+/* =========================
+   Posts Grid
+========================= */
+
+.instagram-grid{
+    display:grid;
+
+    grid-template-columns:
+    repeat(4,1fr);
+
+    gap:12px;
+}
+
+.instagram-grid a{
+    position:relative;
+
+    display:block;
+
+    overflow:hidden;
+
+    border-radius:12px;
+
+    aspect-ratio:1/1;
+}
+
+.instagram-grid img{
+    width:100%;
+    height:100%;
+
+    object-fit:cover;
+
+    transition:.25s;
+}
+
+.instagram-grid a:hover img{
+    transform:scale(1.05);
+    filter:brightness(.85);
+}
+
+/* =========================
+   Hover Overlay
+========================= */
+
+.instagram-grid a::after{
+    content:"";
+
+    position:absolute;
+
+    inset:0;
+
+    background:rgba(0,0,0,.15);
+
+    opacity:0;
+
+    transition:.25s;
+}
+
+.instagram-grid a:hover::after{
+    opacity:1;
+}
+
+/* =========================
+   Notes Grid
+========================= */
+
+.notes-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:16px;
+    margin-top:20px;
+}
+
+.note-card{
+    background: linear-gradient(135deg,#122248,#1d3b7a);
+    color:white;
+    padding:15px;
+    border-radius:14px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.1);
+    transition:0.2s;
+}
+
+.note-card:hover{
+    transform: translateY(-4px);
+}
+
+.note-title{
+    font-weight:bold;
+    margin-bottom:8px;
+}
+
+.note-meta{
+    font-size:12px;
+    opacity:0.8;
+}
+
+.download-btn{
+    display:inline-block;
+    margin-top:10px;
+    padding:6px 10px;
+    background:white;
+    color:#122248;
+    border-radius:8px;
+    font-size:12px;
+    text-decoration:none;
+}
+
+/* =========================
+   Mobile
+========================= */
+
+@media(max-width:992px){
+
+    .instagram-grid{
+        grid-template-columns:
+        repeat(3,1fr);
+    }
+
+}
+
+@media(max-width:768px){
+
+    .profile-top{
+        flex-direction:column;
+        text-align:center;
+    }
+
+    .profile-stats{
+        justify-content:center;
+        flex-wrap:wrap;
+    }
+
+    .profile-username-row{
+        justify-content:center;
+    }
+
+    .instagram-grid{
+        grid-template-columns:
+        repeat(2,1fr);
+    }
+
+}
+
+@media(max-width:480px){
+
+    .profile-container{
+        padding:15px;
+    }
+
+    .profile-avatar{
+        width:100px;
+        height:100px;
+    }
+
+    .instagram-grid{
+        gap:6px;
+    }
+
+}
+</style>
+
+<div class="profile-container">
+
+    <div class="profile-top">
+
+        <div class="profile-left">
+            <img src="{{ profile_user.get_profile_picture_url }}" class="profile-avatar">
+        </div>
+
+        <div class="profile-right">
+
+            <div class="profile-username-row">
+                <span class="profile-username">{{ profile_user.username }}</span>
+                {% if is_owner %}
+                <a href="{% url 'edit_profile' %}" class="edit-btn">ویرایش پروفایل</a>
+                {% endif %}
+            </div>
+
+            <div class="profile-stats">
+                <span><b>{{ user_posts.count }}</b> پست</span>
+                <span><b>{{ profile_user.followers.count }}</b> دنبال‌کننده</span>
+                <span><b>{{ profile_user.following.count }}</b> دنبال‌شونده</span>
+            </div>
+
+            <div class="profile-name">{{ profile_user.get_full_name }}</div>
+
+            {% if profile_user.bio %}
+            <div class="profile-bio">{{ profile_user.bio }}</div>
+            {% endif %}
+
+            <div class="profile-extra">
+                {% if profile_user.field_of_study %}
+                    <div>🎓 {{ profile_user.field_of_study }}</div>
+                {% endif %}
+                {% if profile_user.semester %}
+                    <div>📚 ترم {{ profile_user.semester }}</div>
+                {% endif %}
+                {% if profile_user.email %}
+                    <div>✉️ {{ profile_user.email }}</div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+
+    <div class="profile-tabs">
+        <button class="tab-btn active" data-tab="posts">
+            <i class="fa-solid fa-grip"></i>
+        </button>
+
+        <button class="tab-btn" data-tab="notes">
+            <i class="fa-solid fa-book"></i>
+        </button>
+    </div>
+
+    <!-- POSTS -->
+<div id="posts" class="tab-content">
+    <div class="instagram-grid">
+        {% for post in user_posts %}
+        <a href="{% url 'post_detail' post.id %}">
+            <img src="{{ post.image.url }}">
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- NOTES -->
+<div id="notes" class="tab-content" style="display:none;">
+    <div class="notes-grid">
+        {% for note in user_notes %}
+        <div class="note-card">
+            <div class="note-title">{{ note.title }}</div>
+            <div class="note-meta">
+                📚 {{ note.lesson_name }}
+            </div>
+            <a href="{% url 'download_note' note.id %}" class="download-btn">
+                دانلود
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const buttons = document.querySelectorAll(".tab-btn");
+    const tabs = document.querySelectorAll(".tab-content");
+
+    buttons.forEach(btn => {
+        btn.addEventListener("click", function () {
+
+            const target = this.getAttribute("data-tab");
+
+            // مخفی همه تب‌ها
+            tabs.forEach(t => t.style.display = "none");
+
+            // نمایش تب انتخابی
+            document.getElementById(target).style.display = "block";
+
+            // active کردن دکمه‌ها
+            buttons.forEach(b => b.classList.remove("active"));
+            this.classList.add("active");
+
+        });
+    });
+
+});
+</script>
+{% endblock %}

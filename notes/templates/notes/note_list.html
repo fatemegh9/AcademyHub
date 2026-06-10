@@ -1,0 +1,340 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}جزوات دانشگاهی{% endblock %}
+
+{% block content %}
+
+<style>
+    select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: white;
+        color: black;
+    }
+
+    select option {
+        background-color: white;
+        color: black;
+    }
+
+    select option:checked {
+        background-color: #14203c;
+        color: white;  
+    }
+
+    select option:hover {
+        background-color: #14203c;
+    }
+
+    a {
+    text-decoration: none !important;
+}
+
+    .btn {
+    text-decoration: none !important;
+}
+
+.note-card{
+    min-width: 220px;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    background: rgba(255,255,255,.05);
+
+    position: relative;
+    overflow: hidden;
+
+    transition: all .3s ease;
+}
+
+.note-card:hover{
+    transform: translateY(-6px);
+    background: rgba(255,255,255,.10);
+    box-shadow: 0 12px 25px rgba(0,0,0,.30);
+    border-color: rgba(255,255,255,.35);
+}
+
+.note-card::before{
+    content:'';
+    position:absolute;
+    top:0;
+    left:-100%;
+    width:100%;
+    height:100%;
+
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,.12),
+        transparent
+    );
+
+    transition:.6s;
+}
+
+.note-card:hover::before{
+    left:100%;
+}
+
+.upload-note-wrapper{
+    margin-bottom: 25px;
+}
+
+.upload-note-btn{
+    background: linear-gradient(135deg,#122248,#1d3b7a);
+    color: white;
+    text-decoration: none;
+    padding: 22px 28px;
+    border-radius: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all .3s ease;
+    box-shadow: 0 10px 25px rgba(18,34,72,.18);
+}
+
+.upload-note-btn:hover{
+    transform: translateY(-4px);
+    color: white;
+    box-shadow: 0 15px 35px rgba(18,34,72,.35);
+}
+
+.upload-title{
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.upload-subtitle{
+    font-size: 13px;
+    opacity: .8;
+    margin-top: 4px;
+}
+
+.upload-icon{
+    width: 55px;
+    height: 55px;
+    background: rgba(255,255,255,.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    transition: all .3s ease;
+}
+
+.upload-note-btn:hover .upload-icon{
+    transform: rotate(90deg) scale(1.1);
+    background: rgba(255,255,255,.25);
+}
+</style>
+
+<div class="upload-note-wrapper">
+    <a href="{% url 'upload_note' %}" class="upload-note-btn">
+        <div>
+            <div class="upload-title">📚 آپلود جزوه جدید</div>
+            <div class="upload-subtitle">
+                جزوه‌هات رو با بقیه دانشجوها به اشتراک بذار
+            </div>
+        </div>
+
+        <div class="upload-icon">
+            ➕
+        </div>
+    </a>
+</div>
+<div style="display: flex; gap: 20px; flex-wrap: wrap;">
+
+    <!-- سه باکس جزوه در سمت چپ (order: 1) -->
+    <div style="flex: 3; min-width: 300px; order: 1;">
+        
+        {% if search_query or selected_level or selected_type or selected_university %}
+
+        <!-- نتایج جستجو -->
+        <div style="
+            background: linear-gradient(135deg,#122248,#1d3b7a);
+            border-radius:12px;
+            padding:20px;
+            box-shadow:0 1px 3px white;
+        ">
+
+            <h3 style="color:white;">
+                🔍 نتایج جستجو برای "{{ search_query }}"
+            </h3>
+
+            <hr>
+
+            <div style="display:flex; flex-wrap:wrap; gap:15px;">
+
+                {% for note in notes %}
+                <div class="note-card">
+
+                    <h5 style="color:white;">{{ note.title }}</h5>
+
+                    <p style="font-size:12px;color:#ddd;">
+                        {{ note.lesson_name }}
+                    </p>
+
+                    <p style="font-size:12px;color:#ddd;">
+                        {{ note.professor_name }}
+                    </p>
+
+                    <p style="font-size:11px;color:white;">
+                        📥 {{ note.downloads_count }} دانلود
+                    </p>
+
+                    <a href="{% url 'download_note' note.id %}"
+                       class="btn btn-success btn-sm" style="color:white;">
+                        دانلود
+                    </a>
+
+                </div>
+                {% empty %}
+                <div class="alert alert-warning">
+                    هیچ نتیجه‌ای پیدا نشد.
+                </div>
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <!-- باکس 1: محبوب‌ترین -->
+        <div style="background: linear-gradient(135deg,#122248,#1d3b7a); border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px white; margin-bottom: 20px;">
+            <h3 style="color: white;">🔥 محبوب‌ترین جزوه‌ها</h3>
+            <hr>
+            <div style="display: flex; gap: 15px; overflow-x: auto; padding: 10px 0;">
+                {% for note in most_popular %}
+                <div class="note-card">
+                    <h5 style="color:white;">{{ note.title|truncatewords:5 }}</h5>
+                    <p style="font-size: 12px; color: gray;">{{ note.lesson_name }}</p>
+                    <p style="font-size: 11px; color: white">
+                        📥 {{ note.downloads_count }} دانلود
+                    </p>
+
+                    <a href="{% url 'download_note' note.id %}" style="color:white;">
+                        📥 دانلود
+                    </a>
+
+                    {% if request.user != note.uploaded_by %}
+                        {% if request.user in note.saved_by.all %}
+                            <a href="{% url 'unsave_note' note.id %}" class="btn btn-sm btn-warning">
+                                📁 حذف از ذخیره‌ها
+                            </a>
+                        {% else %}
+                            <a href="{% url 'save_note' note.id %}" class="btn btn-sm btn-outline-warning" style="color:white;">
+                                📁 ذخیره
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                {% empty %}
+                <p>هیچ جزوه‌ای وجود ندارد.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- باکس 2: جدیدترین -->
+        <div style="background: linear-gradient(135deg,#122248,#1d3b7a); border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <h3 style="color:white;">🆕 جدیدترین جزوه‌ها</h3>
+            <hr>
+            <div style="display: flex; gap: 15px; overflow-x: auto; padding: 10px 0;">
+                {% for note in newest %}
+                <div class="note-card">
+                    <h5 style="color:white;">{{ note.title|truncatewords:5 }}</h5>
+                    <p style="font-size: 12px; color: gray;">{{ note.lesson_name }}</p>
+                    <p style="font-size: 11px; color:white;">📅 {{ note.created_at|date:"Y/m/d" }}</p>
+                    <a href="{% url 'download_note' note.id %}" style="color:white;">📥 دانلود</a>
+
+                                        <!-- دکمه ذخیره جزوه (فقط برای کاربرانی که خودشان آپلود نکرده‌اند) -->
+                    {% if request.user != note.uploaded_by %}
+                        {% if request.user in note.saved_by.all %}
+                        <a href="{% url 'unsave_note' note.id %}" class="btn btn-sm btn-warning" style="color:white;">📁 حذف از ذخیره‌ها</a>
+                        {% else %}
+                        <a href="{% url 'save_note' note.id %}" class="btn btn-sm btn-outline-warning" style="color:white;">📁 ذخیره</a>
+                        {% endif %}
+                    {% endif %}
+
+                </div>
+                {% empty %}
+                <p>هیچ جزوه‌ای وجود ندارد.</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+    </div>  
+    <!-- سایدبار سمت راست (order: 2) -->
+    <div style="flex: 1; min-width: 250px; order: 2;height: 600px; overflow-y: auto;">
+        
+        <!-- باکس جستجو -->
+        <div style="background: linear-gradient(135deg,#122248,#1d3b7a); border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px white; margin-bottom: 20px;">
+            <h5 style="color:white;">🔍 جستجو</h5>
+            <hr>
+            <form method="get" action="{% url 'note_list' %}">
+                <input type="text" name="q" value="{{ search_query }}" placeholder="عنوان، درس، استاد..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px;">
+                <button type="submit" style="width: 100%; padding: 8px; background: white; color: #14203c; border: none; border-radius: 8px;">جستجو</button>
+            </form>
+        </div>
+        
+        <!-- باکس رشته‌ها -->
+        <!-- باکس فیلترها -->
+<div style="background: linear-gradient(135deg,#122248,#1d3b7a); border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px white; margin-bottom: 20px;">
+    <h5 style="color:white;">🔍 فیلترهای پیشرفته</h5>
+    <hr>
+    <form method="get" action="{% url 'note_list' %}">
+        <!-- حفظ مقدار جستجو -->
+        <input type="hidden" name="q" value="{{ search_query }}">
+        
+        <!-- فیلتر مقطع -->
+        <div style="margin-bottom: 15px;">
+            <label style="font-weight: bold; display: block; margin-bottom: 5px; color:white;">مقطع تحصیلی</label>
+            <select name="level" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 8px;" class="custom-select">
+                <option value="">همه مقاطع</option>
+                <option value="associate" {% if selected_level == 'associate' %}selected{% endif %}>کاردانی</option>
+                <option value="bachelor" {% if selected_level == 'bachelor' %}selected{% endif %}>کارشناسی</option>
+                <option value="master" {% if selected_level == 'master' %}selected{% endif %}>کارشناسی ارشد</option>
+                <option value="phd" {% if selected_level == 'phd' %}selected{% endif %}>دکتری</option>
+            </select>
+        </div>
+        
+        <!-- فیلتر نوع جزوه -->
+        <div style="margin-bottom: 15px;">
+            <label style="font-weight: bold; display: block; margin-bottom: 5px; color:white;">نوع جزوه</label>
+            <select name="note_type" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 8px;">
+                <option value="">همه انواع</option>
+                <option value="handwritten" {% if selected_type == 'handwritten' %}selected{% endif %}>دستنویس</option>
+                <option value="typed" {% if selected_type == 'typed' %}selected{% endif %}>تایپی</option>
+                <option value="slide" {% if selected_type == 'slide' %}selected{% endif %}>اسلاید</option>
+                <option value="exam" {% if selected_type == 'exam' %}selected{% endif %}>نمونه سوال</option>
+            </select>
+        </div>
+        
+        <!-- فیلتر دانشگاه -->
+        <div style="margin-bottom: 15px;">
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;color:white;">دانشگاه</label>
+            <select name="university" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 8px;">
+                <option value="">همه دانشگاه‌ها</option>
+                <option value="tehran" {% if selected_university == 'tehran' %}selected{% endif %}>دانشگاه تهران</option>
+                <option value="sharif" {% if selected_university == 'sharif' %}selected{% endif %}>صنعتی شریف</option>
+                <option value="azad" {% if selected_university == 'azad' %}selected{% endif %}>آزاد</option>
+                <option value="pnu" {% if selected_university == 'pnu' %}selected{% endif %}>پیام نور</option>
+            </select>
+        </div>
+        
+        <button type="submit" style="width: 100%; padding: 10px; background: white; color: #14203c; border: none; border-radius: 8px;">اعمال فیلتر</button>
+        
+        {% if selected_level or selected_type or selected_university or search_query %}
+        <a href="{% url 'note_list' %}" style="display: block; text-align: center; margin-top: 10px; color: #dc3545; text-decoration: none;">حذف همه فیلترها</a>
+        {% endif %}
+    </form>
+</div>
+    </div>
+
+</div>
+
+{% endblock %}

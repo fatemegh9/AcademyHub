@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ویرایش پست{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4>✏️ ویرایش پست</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- نمایش عکس فعلی -->
+                    {% if post.image %}
+                    <div class="mb-3 text-center">
+                        <img src="{{ post.image.url }}" style="max-height: 250px; border-radius: 12px;">
+                        <div class="form-check mt-2">
+                            <input type="checkbox" name="delete_image" id="delete_image" class="form-check-input">
+                            <label for="delete_image" class="form-check-label text-danger">حذف عکس فعلی</label>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- آپلود عکس جدید -->
+                    <div class="mb-3">
+                        <label class="form-label">عکس جدید (اختیاری)</label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                        <small class="text-muted">در صورت تمایل عکس جدیدی انتخاب کنید</small>
+                    </div>
+                    
+                    <!-- ویرایش متن -->
+                    <div class="mb-3">
+                        <label class="form-label">متن (کپشن)</label>
+                        <textarea name="content" class="form-control" rows="5" placeholder="درباره این عکس بنویس...">{{ post.content }}</textarea>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">💾 ذخیره تغییرات</button>
+                        <a href="{% url 'timeline' %}" class="btn btn-secondary">🔙 بازگشت</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

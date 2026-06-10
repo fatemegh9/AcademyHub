@@ -1,0 +1,575 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ذخیره شده‌ها{% endblock %}
+
+{% block content %}
+
+<style>
+
+.post-card-wrapper {
+    flex: 0 0 auto;
+    width: 280px;
+    margin-top: 20px;
+}
+
+.post-card {
+    background: linear-gradient(135deg, #122248, #1d3b7a);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    color: white;
+    height: 100%;
+}
+
+.post-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(18, 34, 72, 0.4);
+    background: linear-gradient(135deg, #1d3b7a, #2956b2);
+}
+
+.post-image-wrap {
+    width: 100%;
+    height: 150px;
+    overflow: hidden;
+}
+
+.post-image-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.post-card-body {
+    padding: 14px 16px;
+}
+
+.post-author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.post-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255,255,255,0.3);
+}
+
+.post-author strong {
+    display: block;
+    font-size: 14px;
+}
+
+.post-author small {
+    font-size: 11px;
+    opacity: 0.65;
+}
+
+.post-text {
+    font-size: 13px;
+    line-height: 1.6;
+    opacity: 0.9;
+    margin-bottom: 12px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.post-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    padding-top: 10px;
+    margin-top: 4px;
+}
+
+.post-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+    opacity: 0.85;
+}
+
+    .saved-row{
+    display:flex;
+    overflow-x:auto;
+    gap:20px;
+    padding-bottom:10px;
+}
+
+.saved-row .col-md-6{
+    flex:0 0 auto;
+    width:300px;
+}
+
+    .tab-btn {
+        padding: 10px 20px;
+        border: none;
+        background: linear-gradient(135deg,#122248,#1d3b7a);
+        cursor: pointer;
+        border-radius: 8px;
+        margin-right: 10px;
+        transition: all 0.2s;
+        color:white;
+    }
+    .tab-btn.active {
+        background: linear-gradient(135deg,#122248,#1d3b7a);
+        color: white;
+    }
+
+    .tab-btn:hover{
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(18,34,72,.35);
+        background: linear-gradient(135deg,#1d3b7a,#2956b2);
+}
+.tab-content{
+    animation:fadeIn .35s ease;
+}
+
+@keyframes fadeIn{
+    from{
+        opacity:0;
+        transform:translateY(10px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+
+    .saved-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+        width:280px;
+        height:160px;
+        background: linear-gradient(135deg,#122248,#1d3b7a);
+        color:white;
+        margin-top: 20px;
+        border-radius: 8px;
+        padding: 10px 20px;
+    }
+    .saved-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(18,34,72,.35);
+        background: linear-gradient(135deg,#1d3b7a,#2956b2);
+    }
+    .modal-overlay {
+        display: none;
+
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+    }
+    .modal-content {
+        background: white;
+        max-width: 500px;
+        width: 90%;
+        border-radius: 16px;
+        padding: 20px;
+        max-height: 80vh;
+        overflow-y: auto;
+        color:#122248;
+    }
+    .close-modal {
+        float: left;
+        font-size: 24px;
+        cursor: pointer;
+        color: #999;
+    }
+    .close-modal:hover {
+        color: #333;
+    }
+
+    .btn {
+    text-decoration: none !important;
+}
+
+.card-menu {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.menu-dots {
+    cursor: pointer;
+    font-size: 22px;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 6px;
+    transition: 0.2s;
+}
+
+.menu-dots:hover {
+    background: rgba(255,255,255,0.15);
+}
+
+/* منوی افقی */
+.menu-actions {
+    display: none;
+    gap: 8px;
+    align-items: center;
+}
+
+.menu-actions a {
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    transition: 0.2s;
+    white-space: nowrap;
+}
+
+.menu-actions a:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.saved-card:hover .action-buttons{
+    opacity:1;
+}
+
+.saved-stats{
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-bottom:25px;
+}
+
+.stat-card{
+    flex:1;
+    min-width:180px;
+    background:linear-gradient(135deg,#122248,#1d3b7a);
+    border-radius:16px;
+    padding:18px;
+    color:white;
+    display:flex;
+    align-items:center;
+    gap:15px;
+    box-shadow:0 10px 25px rgba(18,34,72,.25);
+}
+
+.stat-icon{
+    font-size:28px;
+}
+
+.stat-value{
+    font-size:22px;
+    font-weight:bold;
+}
+
+.stat-label{
+    font-size:13px;
+    opacity:.8;
+}
+
+.saved-row::-webkit-scrollbar{
+    height:8px;
+}
+
+.saved-row::-webkit-scrollbar-track{
+    background:#0f1b38;
+    border-radius:10px;
+}
+
+.saved-row::-webkit-scrollbar-thumb{
+    background:#2956b2;
+    border-radius:10px;
+}
+
+.saved-row::-webkit-scrollbar-thumb:hover{
+    background:#3a6fe0;
+}
+</style>
+
+<div class="saved-stats">
+    <div class="stat-card">
+        <span class="stat-icon">📚</span>
+        <div>
+            <div class="stat-value">{{ saved_notes.count }}</div>
+            <div class="stat-label">جزوه ذخیره شده</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-icon">📝</span>
+        <div>
+            <div class="stat-value">{{ saved_posts.count }}</div>
+            <div class="stat-label">پست ذخیره شده</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-icon">⭐</span>
+        <div>
+            <div class="stat-value">{{ saved_notes.count|add:saved_posts.count }}</div>
+            <div class="stat-label">مجموع ذخیره‌ها</div>
+        </div>
+    </div>
+</div>
+
+<!-- تب‌ها -->
+<div class="mb-4">
+    <button class="tab-btn active" onclick="switchTab('notes')">📚 جزوه‌ها ({{ saved_notes.count }})</button>
+    <button class="tab-btn" onclick="switchTab('posts')">📝 پست‌ها ({{ saved_posts.count }})</button>
+</div>
+
+<!-- جزوه‌ها -->
+<div id="notes-tab" class="tab-content">
+    <div class="saved-row">
+        {% for saved in saved_notes %}
+        <div class="col-md-6 mb-3">
+            <div class="card saved-card h-100" onclick="showNoteModal('{{ saved.note.id }}')">
+                <div class="card-body">
+                    <div style="font-size:30px;margin-bottom:10px;">
+                        📚
+                    </div>
+                    <h5 class="card-title">{{ saved.note.title|truncatewords:8 }}</h5>
+                    <p class="text-muted small">{{ saved.note.lesson_name }} | {{ saved.note.professor_name|default:"بدون استاد" }}</p>
+                    <p>{{ saved.note.description|truncatewords:20 }}</p>
+                    <div class="small text-muted mb-2">
+                        📥 {{ saved.note.downloads_count }} دانلود | ⭐ {{ saved.note.average_rating|default:0 }}/5
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">ذخیره شده: {{ saved.saved_at|date:"Y/m/d H:i" }}</small>
+                        <div class="card-menu">
+                                <span class="menu-dots" onclick="toggleCardMenu(event)">⋯</span>
+
+                                <div class="menu-actions">
+                                    <a href="{% url 'download_note' saved.note.id %}">📥 دانلود</a>
+                                    <a href="{% url 'unsave_note' saved.note.id %}">🗑️ حذف</a>
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col"><div class="alert alert-info">هیچ جزوه‌ای ذخیره نکرده‌اید.</div></div>
+        {% endfor %}
+    </div>
+</div>
+
+
+<!-- پست‌ها -->
+<div id="posts-tab" class="tab-content" style="display: none;">
+    <div class="saved-row">
+        {% for saved in saved_posts %}
+        <div class="post-card-wrapper">
+            <div class="post-card" onclick="showPostModal('{{ saved.post.id }}')">
+
+                {% if saved.post.image %}
+                <div class="post-image-wrap">
+                    <img src="{{ saved.post.image.url }}" alt="post image">
+                </div>
+                {% endif %}
+
+                <div class="post-card-body">
+                    <div class="post-author">
+                        <img src="{{ saved.post.author.profile_picture.url|default:'/media/profiles/default.png' }}" class="post-avatar">
+                        <div>
+                            <strong>{{ saved.post.author.username }}</strong>
+                            <small>{{ saved.post.created_at|timesince }} پیش</small>
+                        </div>
+                    </div>
+
+                    <p class="post-text">{{ saved.post.content|truncatewords:25 }}</p>
+
+                    <div class="post-footer">
+                        <div class="post-stats">
+                            <span>❤️ {{ saved.post.likes_count|default:0 }}</span>
+                            <span>💬 {{ saved.post.comments_count|default:0 }}</span>
+                        </div>
+                        <div class="card-menu">
+                            <span class="menu-dots" onclick="toggleCardMenu(event)">⋯</span>
+                            <div class="menu-actions">
+                                <a href="{% url 'unsave_post' saved.post.id %}">🗑️ حذف</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {% empty %}
+        <div class="col"><div class="alert alert-info">هیچ پستی ذخیره نکرده‌اید.</div></div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- مودال جزوه -->
+<div id="noteModal" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <div id="noteModalContent"></div>
+    </div>
+</div>
+
+<!-- مودال پست -->
+<div id="postModal" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <div id="postModalContent"></div>
+    </div>
+</div>
+
+<script>
+function switchTab(tab) {
+    const notesTab = document.getElementById('notes-tab');
+    const postsTab = document.getElementById('posts-tab');
+    const btns = document.querySelectorAll('.tab-btn');
+    
+    if (tab === 'notes') {
+        notesTab.style.display = 'block';
+        postsTab.style.display = 'none';
+        btns[0].classList.add('active');
+        btns[1].classList.remove('active');
+    } else {
+        notesTab.style.display = 'none';
+        postsTab.style.display = 'block';
+        btns[0].classList.remove('active');
+        btns[1].classList.add('active');
+    }
+}
+
+function showNoteModal(noteId) {
+    fetch(`/notes/get-note/${noteId}/`)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('noteModalContent').innerHTML = `
+                <div style="text-align:center; font-size:40px; margin-bottom:10px;">📚</div>
+
+                <h3 style="margin-bottom:10px; color:#122248;">
+                    ${data.title}
+                </h3>
+
+                <div style="font-size:13px; color:gray; margin-bottom:10px;">
+                    📖 ${data.lesson_name} | 👨‍🏫 ${data.professor_name || 'نامشخص'}
+                </div>
+
+                <p style="line-height:1.7; color:#333;">
+                    ${data.description}
+                </p>
+
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    margin:15px 0;
+                    padding:10px;
+                    background:#f5f7ff;
+                    border-radius:10px;
+                    font-size:13px;
+                ">
+                    <span>📥 ${data.downloads_count} دانلود</span>
+                    <span>⭐ ${data.average_rating}/5</span>
+                </div>
+
+                <a href="${data.download_url}"
+                   style="
+                        display:block;
+                        text-align:center;
+                        padding:10px;
+                        background:linear-gradient(135deg,#122248,#1d3b7a);
+                        color:white;
+                        border-radius:10px;
+                        text-decoration:none;
+                        font-weight:bold;
+                   ">
+                    📥 دانلود جزوه
+                </a>
+            `;
+
+            document.getElementById('noteModal').style.display = 'flex';
+        });
+}
+
+function showPostModal(postId) {
+    fetch(`/social/get-post/${postId}/`)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('postModalContent').innerHTML = `
+                <div style="display:flex; align-items:center; margin-bottom:15px;">
+                    <img src="${data.author_avatar}"
+                         style="width:50px; height:50px; border-radius:50%; object-fit:cover;">
+
+                    <div style="margin-left:10px;">
+                        <div style="font-weight:bold; color:#122248;">
+                            ${data.author_name}
+                        </div>
+                        <div style="font-size:12px; color:gray;">
+                            ${data.created_at}
+                        </div>
+                    </div>
+                </div>
+
+                <p style="line-height:1.7; color:#333; margin-bottom:10px;">
+                    ${data.content}
+                </p>
+
+                ${data.image ? `
+                    <img src="${data.image}"
+                        style="width:100%; max-height:200px; object-fit:contain; border-radius:10px; margin-bottom:10px; background:#f0f0f0;">
+                ` : ''}
+
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    padding:10px;
+                    background:#f5f7ff;
+                    border-radius:10px;
+                    font-size:13px;
+                ">
+                    <span>❤️ ${data.likes_count} لایک</span>
+                    <span>💬 ${data.comments_count} کامنت</span>
+                </div>
+            `;
+
+            document.getElementById('postModal').style.display = 'flex';
+        });
+}
+
+function toggleCardMenu(event) {
+    event.stopPropagation();
+
+    const menu = event.currentTarget.nextElementSibling;
+
+    // بستن بقیه منوها
+    document.querySelectorAll('.menu-actions').forEach(m => {
+        if (m !== menu) m.style.display = 'none';
+    });
+
+    menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+}
+
+// کلیک بیرون = بستن
+document.addEventListener('click', function () {
+    document.querySelectorAll('.menu-actions').forEach(m => {
+        m.style.display = 'none';
+    });
+});
+
+function closeModal(event) {
+    document.getElementById('noteModal').style.display = 'none';
+    document.getElementById('postModal').style.display = 'none';
+}
+</script>
+
+{% endblock %}
