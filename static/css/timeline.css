@@ -24,26 +24,17 @@ body{
 }
 
 /* ===== پست‌ها ===== */
-
-.posts-grid{
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+.posts-grid {
+    width: 100%;
 }
 
-/* هر پست */
-.post-card{
-    display: inline-block;
-    width: 100%;
-
+.post-card {
+    width: calc(25% - 12px);
     margin-bottom: 16px;
-
     background: #fff;
     border-radius: 16px;
-    padding: 12px;
-
+    padding: 20px;
     box-shadow: 0 6px 18px rgba(0,0,0,.06);
-
     transition: .2s ease;
 }
 
@@ -263,22 +254,14 @@ body{
 .post-menu a:hover{
     background: #f3f4f6;
 }
-@media (max-width:1200px){
-    .posts-grid{
-        grid-template-columns: repeat(3,1fr);
-    }
+@media (max-width: 1200px) {
+    .posts-grid { columns: 3; }
 }
-
-@media (max-width:768px){
-    .posts-grid{
-        grid-template-columns: repeat(2,1fr);
-    }
+@media (max-width: 768px) {
+    .posts-grid { columns: 2; }
 }
-
-@media (max-width:480px){
-    .posts-grid{
-        grid-template-columns: repeat(1,1fr);
-    }
+@media (max-width: 480px) {
+    .posts-grid { columns: 1; }
 }
 
 /* ===== کامنت‌ها ===== */

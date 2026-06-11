@@ -1,8 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block title %}تایم‌لاین{% endblock %}
-
 {% block content %}
 <!-- بخش استوری‌ها -->
 <div class="stories-container mb-4">
@@ -187,5 +185,15 @@
         console.log("دستي صدا زدن loadStories");
         loadStories();
     });
+    var grid = document.querySelector('.posts-grid');
+imagesLoaded(grid, function() {
+    new Masonry(grid, {
+        itemSelector: '.post-card',
+        columnWidth: '.post-card',
+        gutter: 16,
+        isOriginLeft: false
+    });
+});
+
 </script>
 {% endblock %}
