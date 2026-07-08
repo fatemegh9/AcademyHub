@@ -73,7 +73,7 @@ def register(request):
 def landing_view(request):
     if request.user.is_authenticated:
         return redirect('timeline')
-    return render(request, 'index.html')
+    return render(request, 'landing.html')
 
 
 def login_view(request):
