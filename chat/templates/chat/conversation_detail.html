@@ -1,0 +1,384 @@
+{% extends 'base.html' %}
+{% block title %}گفتگو با {{ other_user.username }}{% endblock %}
+
+{% block content %}
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+.chat-wrap{direction:rtl;max-width:480px;margin:0 auto;padding:1.5rem 1rem;}
+.chat-header{display:flex;align-items:center;gap:10px;padding-bottom:14px;border-bottom:1px solid #eee;margin-bottom:14px;}
+.back-arrow{color:#9ca3af;text-decoration:none;font-size:18px;margin-left:4px;}
+.chat-avatar{width:38px;height:38px;border-radius:50%;background:#eef2fa;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#1d3b7a;overflow:hidden;}
+.chat-avatar img{width:100%;height:100%;object-fit:cover;}
+.chat-name{font-size:15px;font-weight:600;color:#122248;}
+.messages-area{display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem;max-height:60vh;overflow-y:auto;padding:4px;}
+.msg-row{display:flex;}
+.msg-row.mine{justify-content:flex-start;}
+.msg-row.theirs{justify-content:flex-end;}
+.msg-bubble{padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.6;}
+.msg-bubble.mine{background:#122248;color:#fff;max-width:75%;}
+.msg-bubble.theirs{background:#f3f4f6;color:#1f2937;max-width:100%;}
+
+/* ── در گروه‌ها، هر فرستنده یه نام و رنگ ثابت می‌گیره تا پیام‌ها از هم قابل‌تشخیص باشن ── */
+.msg-stack{max-width:75%;display:flex;flex-direction:column;align-items:flex-end;}
+.msg-sender-name{font-size:11px;font-weight:700;margin-bottom:3px;padding:0 4px;}
+
+.msg-color-1{background:#E6F1FB;color:#163b66;}
+.msg-color-2{background:#EAF7EE;color:#1f6b41;}
+.msg-color-3{background:#F3EAFB;color:#5b3585;}
+.msg-color-4{background:#FBEAEE;color:#8a3b52;}
+.msg-color-5{background:#E8ECF7;color:#34457a;}
+.msg-color-6{background:#EAF4F4;color:#1f5c5c;}
+
+.msg-color-1-name{color:#1d5a96;}
+.msg-color-2-name{color:#1f7a4d;}
+.msg-color-3-name{color:#6b3fa0;}
+.msg-color-4-name{color:#a13f5c;}
+.msg-color-5-name{color:#3c4f8a;}
+.msg-color-6-name{color:#1f6b6b;}
+
+/* ── پیام‌های سیستمی (مثل «فلانی گروه را ایجاد کرد») ── */
+.msg-system{
+    text-align:center;
+    font-size:11px;
+    color:#9ca3af;
+    background:#f7f9ff;
+    border:1px solid #eef2fa;
+    border-radius:99px;
+    padding:6px 14px;
+    margin:6px auto;
+    max-width:90%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+}
+.msg-system-dot{
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:#f5b400;
+    flex-shrink:0;
+}
+
+.send-form{display:flex;gap:8px;}
+.send-input{flex:1;background:#f7f9ff;border:1px solid #dce4f3;border-radius:10px;padding:11px 14px;font-size:14px;outline:none;font-family:inherit;}
+.send-input:focus{border-color:#2b5cd9;background:#fff;}
+.send-btn{background:#122248;color:#fff;border:none;border-radius:10px;padding:11px 18px;cursor:pointer;font-size:14px;}
+.send-btn:hover{background:#1d3b7a;}
+</style>
+
+<div class="chat-wrap">
+  <div class="chat-header">
+    <a href="{% url 'inbox' %}" class="back-arrow">→</a>
+    <div class="chat-avatar">
+        {% if conversation.is_group %}
+        👥
+        {% elif other_user.profile_picture %}
+        <img src="{{ other_user.profile_picture.url }}">
+        {% else %}
+        {{ other_user.username|first|upper }}
+        {% endif %}
+    </div>
+    <div class="chat-name">{% if conversation.is_group %}{{ conversation.name }}{% else %}{{ other_user.username }}{% endif %}</div>
+    {% if conversation.is_group %}
+    <button type="button"
+            onclick="openAddMembersModal()"
+            style="background:none;border:none;cursor:pointer;color:#9ca3af;padding:4px;margin-right:auto;"
+            title="افزودن عضو">
+        <svg width="18" height="18" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <line x1="19" y1="8" x2="19" y2="14"/>
+            <line x1="22" y1="11" x2="16" y2="11"/>
+        </svg>
+    </button>
+    {% endif %}
+    {% if conversation.is_group %}
+    <button type="button"
+            onclick="openMembersModal()"
+            style="background:none;border:none;cursor:pointer;color:#9ca3af;padding:4px;"
+            title="اعضای گروه">
+        <svg width="18" height="18" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+    </button>
+    {% endif %}
+    <form method="post"
+      action="{% url 'clear_chat' conversation.id %}"
+      onsubmit="event.preventDefault(); openConfirmModal(
+        this,
+        'پاک کردن پیام‌ها',
+        'تمام پیام‌های این گفتگو حذف می‌شوند اما خود گفتگو باقی می‌ماند.'
+      );">
+        {% csrf_token %}
+        <button type="submit"
+                style="background:none;border:none;cursor:pointer;color:#9ca3af;padding:4px;"
+                title="پاک کردن گفتگو">
+
+            <svg width="15" height="15" viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2"
+             stroke-linecap="round"
+             stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6"/>
+            <path d="M14 11v6"/>
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+        </svg>
+
+        </button>
+    </form>
+  </div>
+
+  <div class="messages-area" id="messagesArea">
+    {% for message in messages_list %}
+      {% if message.is_system %}
+      <div class="msg-system"><span class="msg-system-dot"></span>{{ message.text }}</div>
+      {% elif message.sender == request.user %}
+      <div class="msg-row mine">
+        <div class="msg-bubble mine">
+          {{ message.text }}
+        </div>
+      </div>
+      {% else %}
+      <div class="msg-row theirs" data-sender-id="{{ message.sender.id }}">
+        <div class="msg-stack">
+          {% if conversation.is_group %}
+          <div class="msg-sender-name">{{ message.sender.username }}</div>
+          {% endif %}
+          <div class="msg-bubble theirs">
+            {{ message.text }}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <form method="post" action="{% url 'send_message' conversation.id %}" class="send-form">
+    {% csrf_token %}
+    <input type="text" name="text" class="send-input" placeholder="پیامت رو بنویس..." required autocomplete="off">
+    <button type="submit" class="send-btn">ارسال</button>
+  </form>
+</div>
+
+<script>
+  const area = document.getElementById('messagesArea');
+  area.scrollTop = area.scrollHeight;
+
+  // به هر فرستنده‌ی غیرخودی، بر اساس id ثابتش، یه رنگ ثابت اختصاص می‌ده
+  (function () {
+    var palette = ['msg-color-1', 'msg-color-2', 'msg-color-3', 'msg-color-4', 'msg-color-5', 'msg-color-6'];
+    var assigned = {};
+    var next = 0;
+
+    document.querySelectorAll('.msg-row.theirs[data-sender-id]').forEach(function (row) {
+      var id = row.getAttribute('data-sender-id');
+
+      if (!(id in assigned)) {
+        assigned[id] = palette[next % palette.length];
+        next++;
+      }
+
+      var colorClass = assigned[id];
+      var bubble = row.querySelector('.msg-bubble');
+      var nameEl = row.querySelector('.msg-sender-name');
+
+      if (bubble) bubble.classList.add(colorClass);
+      if (nameEl) nameEl.classList.add(colorClass + '-name');
+    });
+  })();
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  var selectedUsers = {};
+  var searchDebounce = null;
+
+  var searchInput = document.getElementById('memberSearchInput');
+  if (!searchInput) return; // یعنی گروه نیست، مودال اصلاً رندر نشده
+
+  window.openAddMembersModal = function () {
+    document.getElementById('addMembersOverlay').style.display = 'flex';
+  };
+
+  window.closeAddMembersModal = function () {
+    document.getElementById('addMembersOverlay').style.display = 'none';
+    searchInput.value = '';
+    document.getElementById('memberSearchResults').innerHTML = '';
+  };
+
+  window.openMembersModal = function () {
+    document.getElementById('membersOverlay').style.display = 'flex';
+  };
+
+  window.closeMembersModal = function () {
+    document.getElementById('membersOverlay').style.display = 'none';
+  };
+
+  searchInput.addEventListener('input', function () {
+    var q = this.value.trim();
+    clearTimeout(searchDebounce);
+    if (q.length < 2) {
+      document.getElementById('memberSearchResults').innerHTML = '';
+      return;
+    }
+    searchDebounce = setTimeout(function () {
+      fetch("{% url 'search_users' %}?q=" + encodeURIComponent(q) + "&conversation_id={{ conversation.id }}")
+        .then(function (res) { return res.json(); })
+        .then(function (data) { renderSearchResults(data.results); })
+        .catch(function (err) { console.error('خطا در جستجو:', err); });
+    }, 250);
+  });
+
+  function renderSearchResults(results) {
+    var container = document.getElementById('memberSearchResults');
+    container.innerHTML = '';
+    results.forEach(function (user) {
+      if (selectedUsers[user.id]) return;
+
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;cursor:pointer;';
+      row.onmouseenter = function () { row.style.background = '#f7f9ff'; };
+      row.onmouseleave = function () { row.style.background = 'transparent'; };
+      row.innerHTML =
+        '<div style="width:28px;height:28px;border-radius:50%;background:#eef2fa;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#1d3b7a;overflow:hidden;flex-shrink:0;">' +
+          (user.avatar_url ? '<img src="' + user.avatar_url + '" style="width:100%;height:100%;object-fit:cover;">' : user.username.charAt(0).toUpperCase()) +
+        '</div>' +
+        '<span style="font-size:13px;color:#1f2937;">' + user.username + '</span>';
+      row.addEventListener('click', function () { selectUser(user); });
+      container.appendChild(row);
+    });
+  }
+
+  function selectUser(user) {
+    selectedUsers[user.id] = user;
+    searchInput.value = '';
+    document.getElementById('memberSearchResults').innerHTML = '';
+    renderChips();
+  }
+
+  function removeUser(id) {
+    delete selectedUsers[id];
+    renderChips();
+  }
+
+  function renderChips() {
+    var chipsContainer = document.getElementById('selectedChips');
+    var hiddenContainer = document.getElementById('hiddenInputsContainer');
+    chipsContainer.innerHTML = '';
+    hiddenContainer.innerHTML = '';
+
+    Object.keys(selectedUsers).forEach(function (id) {
+      var user = selectedUsers[id];
+      var chip = document.createElement('div');
+      chip.style.cssText = 'display:flex;align-items:center;gap:6px;background:#eef2fa;color:#1d3b7a;border-radius:99px;padding:5px 10px;font-size:12px;';
+      chip.innerHTML = '<span>' + user.username + '</span>';
+      var removeBtn = document.createElement('span');
+      removeBtn.textContent = '×';
+      removeBtn.style.cssText = 'cursor:pointer;font-weight:700;';
+      removeBtn.onclick = function () { removeUser(id); };
+      chip.appendChild(removeBtn);
+      chipsContainer.appendChild(chip);
+
+      var hidden = document.createElement('input');
+      hidden.type = 'hidden';
+      hidden.name = 'user_ids';
+      hidden.value = id;
+      hiddenContainer.appendChild(hidden);
+    });
+
+    document.getElementById('addMembersSubmitBtn').disabled = Object.keys(selectedUsers).length === 0;
+  }
+});
+</script>
+
+
+{% if conversation.is_group %}
+<div id="addMembersOverlay" style="display:none;position:fixed;inset:0;background:rgba(8,13,24,0.5);z-index:999;align-items:center;justify-content:center;" onclick="if(event.target===this) closeAddMembersModal()">
+  <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:380px;width:90%;max-height:75vh;display:flex;flex-direction:column;direction:rtl;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <h3 style="font-size:15px;font-weight:700;color:#122248;">افزودن عضو به گروه</h3>
+      <button type="button" onclick="closeAddMembersModal()" style="background:none;border:none;font-size:20px;color:#9ca3af;cursor:pointer;line-height:1;">×</button>
+    </div>
+
+    <input type="text"
+           id="memberSearchInput"
+           placeholder="نام کاربری را جستجو کن..."
+           autocomplete="off"
+           style="width:100%;background:#f7f9ff;border:1px solid #dce4f3;border-radius:10px;padding:9px 12px;font-size:13px;outline:none;font-family:inherit;">
+
+    <div id="memberSearchResults" style="display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto;margin-top:6px;"></div>
+
+    <div id="selectedChips" style="display:flex;flex-wrap:wrap;gap:6px;margin:12px 0;"></div>
+
+    <form method="post" action="{% url 'add_group_members' conversation.id %}" id="addMembersForm">
+      {% csrf_token %}
+      <div id="hiddenInputsContainer"></div>
+      <button type="submit" class="send-btn" style="width:100%;" id="addMembersSubmitBtn" disabled>افزودن اعضای انتخاب‌شده</button>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+{% if conversation.is_group %}
+<div id="membersOverlay" style="display:none;position:fixed;inset:0;background:rgba(8,13,24,0.5);z-index:999;align-items:center;justify-content:center;" onclick="if(event.target===this) closeMembersModal()">
+  <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:380px;width:90%;max-height:75vh;display:flex;flex-direction:column;direction:rtl;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <h3 style="font-size:15px;font-weight:700;color:#122248;">
+        اعضای گروه
+        <span style="font-size:12px;font-weight:400;color:#9ca3af;">({{ conversation.participants.count }} نفر)</span>
+      </h3>
+      <button type="button" onclick="closeMembersModal()" style="background:none;border:none;font-size:20px;color:#9ca3af;cursor:pointer;line-height:1;">×</button>
+    </div>
+
+    <div style="overflow-y:auto;max-height:400px;display:flex;flex-direction:column;gap:4px;">
+      {% for member in conversation.participants.all %}
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 6px;border-radius:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:34px;height:34px;border-radius:50%;background:#eef2fa;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#1d3b7a;overflow:hidden;flex-shrink:0;">
+            {% if member.profile_picture %}
+            <img src="{{ member.profile_picture.url }}" style="width:100%;height:100%;object-fit:cover;">
+            {% else %}
+            {{ member.username|first|upper }}
+            {% endif %}
+          </div>
+          <div>
+            <div style="font-size:13px;color:#1f2937;font-weight:600;">
+              {{ member.username }}
+              {% if member == request.user %}<span style="color:#9ca3af;font-weight:400;">(خودت)</span>{% endif %}
+            </div>
+            {% if member == conversation.created_by %}
+            <div style="font-size:11px;color:#f5a623;">سازنده‌ی گروه</div>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if conversation.created_by == request.user and member != conversation.created_by %}
+        <form method="post"
+              action="{% url 'remove_group_member' conversation.id member.id %}"
+              onsubmit="event.preventDefault(); openConfirmModal(
+                this,
+                'حذف عضو',
+                'آیا مطمئنی می‌خوای {{ member.username }} رو از گروه حذف کنی؟'
+              );">
+          {% csrf_token %}
+          <button type="submit" style="background:none;border:none;cursor:pointer;color:#d97b7b;font-size:12px;padding:4px 8px;">حذف</button>
+        </form>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

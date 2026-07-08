@@ -3,11 +3,11 @@ from . import views
 
 
 urlpatterns = [
-    path('', views.timeline, name='timeline'),
+    path('', views.landing, name='landing'),
+    path('home/', views.timeline, name='timeline'),
     path('create/', views.create_post, name='create_post'),
     path('like/<int:post_id>/', views.like_post, name='like_post'),
     path('comment/<int:post_id>/', views.add_comment, name='add_comment'),
-    path('edit_post/<int:post_id>/', views.edit_post, name='edit_post'),
     path('delete_post/<int:post_id>/', views.delete_post, name='delete_post'),
     path('notifications/', views.notifications_view, name='notifications'),
     path('like_comment/<int:comment_id>/', views.like_comment, name='like_comment'),
@@ -21,5 +21,5 @@ urlpatterns = [
     path('unsave_post/<int:post_id>/', views.unsave_post, name='unsave_post'),
     path('get-post/<int:post_id>/', views.get_post_json, name='get_post_json'),
     path('post/<int:post_id>/', views.post_detail, name='post_detail'),
-    path('comment/delete/<int:comment_id>/', views.delete_comment, name='delete_comment')
+    path('comment/delete/<int:comment_id>/', views.delete_comment, name='delete_comment'),
 ]

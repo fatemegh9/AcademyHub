@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
 import re
+from django.db.models import Avg
 
 
 class Tag(models.Model):
@@ -25,7 +26,6 @@ class Note(models.Model):
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     downloads_count = models.IntegerField(default=0)
-    average_rating = models.FloatField(default=0)
     tags = models.ManyToManyField(Tag, blank=True, related_name='notes')
     field_of_study = models.CharField(max_length=100, blank=True, null=True)
 
@@ -61,19 +61,38 @@ class Note(models.Model):
     def comment_count(self):
         from social.models import Comment
         return Comment.objects.filter(post__note=self).count()
+    
+    @property
+    def average_rating(self):
+        ratings = self.ratings.all()
+
+        if not ratings.exists():
+            return 0
+
+        return round(
+            ratings.aggregate(
+                Avg('score')
+            )['score__avg'],
+            1
+        )
 
     
-class Rating(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    note = models.ForeignKey(Note, on_delete=models.CASCADE, related_name='ratings')
-    score = models.IntegerField(choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')])
-    created_at = models.DateTimeField(auto_now_add=True)
+class NoteRating(models.Model):
+    note = models.ForeignKey(
+        Note,
+        on_delete=models.CASCADE,
+        related_name='ratings'
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    score = models.IntegerField()  # 1 تا 5
 
     class Meta:
-        unique_together = ['user', 'note']
-
-    def __str__(self):
-        return f"{self.user.username} - {self.note.title}: {self.score}"
+        unique_together = ('note', 'user')
     
 
 class SavedNote(models.Model):

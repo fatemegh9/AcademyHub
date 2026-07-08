@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% block title %}ساخت گروه جدید{% endblock %}
+
+{% block content %}
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+.cg-wrap{direction:rtl;max-width:420px;margin:0 auto;padding:2rem 1rem;}
+.cg-card{background:#fff;border:1px solid #eee;border-radius:18px;padding:1.75rem;box-shadow:0 4px 20px rgba(0,0,0,0.06);}
+.cg-title{font-size:20px;font-weight:700;margin-bottom:1.5rem;color:#122248;}
+.cg-label{display:block;font-size:13px;font-weight:700;color:#7a8fbb;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;}
+.cg-field{margin-bottom:1.1rem;}
+.cg-input{width:100%;background:#f7f9ff;border:1px solid #dce4f3;border-radius:10px;padding:12px 14px;font-size:14px;color:#122248;outline:none;font-family:inherit;}
+.cg-input:focus{border-color:#2b5cd9;background:#fff;box-shadow:0 0 0 3px rgba(43,92,217,.1);}
+.cg-hint{font-size:12px;color:#9ca3af;margin-top:6px;}
+.cg-submit{width:100%;background:#122248;color:#fff;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;transition:background .2s, transform .2s, box-shadow .2s;}
+.cg-submit:hover{background:#1d3b7a;transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,0.1);}
+
+/* نقطه‌ی زرد کنار فیلد اجباری */
+.cg-required-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#f5b400;margin:0 3px;vertical-align:middle;}
+
+/* باکس نکته بالای فرم */
+.cg-tip-box{background:#fff8e1;border:1px solid #ffe19a;color:#8a5b00;font-size:13px;line-height:1.6;border-radius:10px;padding:12px 14px;margin-bottom:1.25rem;display:flex;align-items:flex-start;gap:8px;}
+.cg-tip-box .cg-tip-icon{flex-shrink:0;}
+
+/* ── جستجوی زنده‌ی اعضا ── */
+.cg-member-box{position:relative;}
+
+.cg-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+.cg-chip{display:flex;align-items:center;gap:6px;background:#eef2ff;border:1px solid #dce4f3;color:#122248;font-size:13px;font-weight:600;padding:6px 8px 6px 12px;border-radius:99px;}
+.cg-chip-remove{width:18px;height:18px;border-radius:50%;border:none;background:#dce4f3;color:#496188;font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s, color .15s;}
+.cg-chip-remove:hover{background:#c0392b;color:#fff;}
+
+.cg-search-results{position:absolute;top:calc(100% + 4px);right:0;left:0;background:#fff;border:1px solid #dce4f3;border-radius:10px;box-shadow:0 8px 24px rgba(18,34,72,.1);max-height:220px;overflow-y:auto;z-index:20;display:none;}
+.cg-search-results.show{display:block;}
+
+.cg-search-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;transition:background .15s;}
+.cg-search-item:hover, .cg-search-item.active{background:#f7f9ff;}
+.cg-search-item:not(:last-child){border-bottom:1px solid #eef2fa;}
+
+.cg-search-avatar{width:28px;height:28px;border-radius:50%;background:#dce4f3;color:#1d3b7a;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
+.cg-search-avatar img{width:100%;height:100%;object-fit:cover;}
+
+.cg-search-name{font-size:13px;color:#122248;font-weight:600;}
+.cg-search-username{font-size:11px;color:#9ca3af;}
+
+.cg-search-empty, .cg-search-loading{padding:14px;font-size:12px;color:#9ca3af;text-align:center;}
+.cg-search-results::-webkit-scrollbar{width:6px;}
+.cg-search-results::-webkit-scrollbar-thumb{background:#dce4f3;border-radius:6px;}
+</style>
+
+<div class="cg-wrap">
+  <div class="cg-card">
+    <div class="cg-title">ساخت گروه جدید</div>
+
+    <div class="cg-tip-box">
+      <span class="cg-tip-icon">💡</span>
+      <span>اگه عضوی اضافه نکنی، گروه فقط با خودت ساخته می‌شه و می‌تونی بعداً اعضا رو اضافه کنی.</span>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="cg-hint" style="color:#c0392b;margin-bottom:1rem;">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post" action="{% url 'create_group' %}" id="createGroupForm">
+      {% csrf_token %}
+
+      <div class="cg-field">
+        <label class="cg-label">نام گروه<span class="cg-required-dot" title="فیلد اجباری"></span></label>
+        <input type="text" name="name" class="cg-input" placeholder="مثال: گروه ساختمان داده" required>
+      </div>
+
+      <div class="cg-field">
+        <label class="cg-label">اعضای گروه</label>
+
+        <div class="cg-chips" id="cgChips"></div>
+
+        <div class="cg-member-box">
+          <input
+            type="text"
+            class="cg-input"
+            id="cgMemberSearch"
+            placeholder="نام یا نام کاربری رو تایپ کن..."
+            autocomplete="off">
+
+          <div class="cg-search-results" id="cgSearchResults"></div>
+        </div>
+
+        <!-- شناسه‌ی واقعی کاربرهای انتخاب‌شده، نه رشته‌ی آزاد -->
+        <div id="cgHiddenInputs"></div>
+
+        <div class="cg-hint">شروع به تایپ کن تا از بین کاربران سایت انتخاب کنی</div>
+      </div>
+
+      <button type="submit" class="cg-submit">ساخت گروه</button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  var SEARCH_URL = "{% url 'search_users' %}";
+
+  var searchInput   = document.getElementById('cgMemberSearch');
+  var resultsBox    = document.getElementById('cgSearchResults');
+  var chipsBox      = document.getElementById('cgChips');
+  var hiddenBox     = document.getElementById('cgHiddenInputs');
+
+  var selectedUsers = {};   // id -> {id, username, full_name, avatar_url}
+  var debounceTimer = null;
+  var activeIndex = -1;
+  var currentResults = [];
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str == null ? '' : str;
+    return div.innerHTML;
+  }
+
+  function renderChips() {
+    chipsBox.innerHTML = '';
+    hiddenBox.innerHTML = '';
+
+    Object.keys(selectedUsers).forEach(function (id) {
+      var user = selectedUsers[id];
+
+      var chip = document.createElement('span');
+      chip.className = 'cg-chip';
+      chip.innerHTML =
+        '<span>' + escapeHtml(user.full_name || user.username) + '</span>' +
+        '<button type="button" class="cg-chip-remove" data-id="' + id + '" aria-label="حذف عضو">&#10005;</button>';
+      chipsBox.appendChild(chip);
+
+      var hidden = document.createElement('input');
+      hidden.type = 'hidden';
+      hidden.name = 'member_ids';
+      hidden.value = id;
+      hiddenBox.appendChild(hidden);
+    });
+  }
+
+  function closeResults() {
+    resultsBox.classList.remove('show');
+    resultsBox.innerHTML = '';
+    currentResults = [];
+    activeIndex = -1;
+  }
+
+  function renderResults(users) {
+    currentResults = users;
+    activeIndex = -1;
+
+    if (!users.length) {
+      resultsBox.innerHTML = '<div class="cg-search-empty">کاربری پیدا نشد</div>';
+      resultsBox.classList.add('show');
+      return;
+    }
+
+    resultsBox.innerHTML = users.map(function (u, i) {
+      var initial = (u.full_name || u.username || '?').trim().charAt(0);
+      var avatar = u.avatar_url
+        ? '<img src="' + escapeHtml(u.avatar_url) + '" alt="">'
+        : escapeHtml(initial);
+
+      return (
+        '<div class="cg-search-item" data-index="' + i + '" data-id="' + u.id + '">' +
+          '<span class="cg-search-avatar">' + avatar + '</span>' +
+          '<span>' +
+            '<div class="cg-search-name">' + escapeHtml(u.full_name || u.username) + '</div>' +
+            '<div class="cg-search-username">@' + escapeHtml(u.username) + '</div>' +
+          '</span>' +
+        '</div>'
+      );
+    }).join('');
+
+    resultsBox.classList.add('show');
+  }
+
+  function selectUser(user) {
+    selectedUsers[user.id] = user;
+    renderChips();
+    searchInput.value = '';
+    closeResults();
+    searchInput.focus();
+  }
+
+  function fetchUsers(query) {
+    resultsBox.innerHTML = '<div class="cg-search-loading">در حال جستجو...</div>';
+    resultsBox.classList.add('show');
+
+    fetch(SEARCH_URL + '?q=' + encodeURIComponent(query))
+      .then(function (res) {
+        if (!res.ok) throw new Error('search failed');
+        return res.json();
+      })
+      .then(function (data) {
+        var list = data.results || [];
+        var filtered = list.filter(function (u) {
+          return !selectedUsers[u.id];
+        });
+        renderResults(filtered);
+      })
+      .catch(function () {
+        resultsBox.innerHTML = '<div class="cg-search-empty">خطا در جستجو، دوباره تلاش کن</div>';
+      });
+  }
+
+  searchInput.addEventListener('input', function () {
+    var query = searchInput.value.trim();
+    clearTimeout(debounceTimer);
+
+    if (query.length < 2) {
+      closeResults();
+      return;
+    }
+
+    debounceTimer = setTimeout(function () {
+      fetchUsers(query);
+    }, 300);
+  });
+
+  searchInput.addEventListener('keydown', function (e) {
+    if (!resultsBox.classList.contains('show') || !currentResults.length) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeIndex = Math.min(activeIndex + 1, currentResults.length - 1);
+      highlightActive();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIndex = Math.max(activeIndex - 1, 0);
+      highlightActive();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (activeIndex >= 0) selectUser(currentResults[activeIndex]);
+    } else if (e.key === 'Escape') {
+      closeResults();
+    }
+  });
+
+  function highlightActive() {
+    var items = resultsBox.querySelectorAll('.cg-search-item');
+    items.forEach(function (item, i) {
+      item.classList.toggle('active', i === activeIndex);
+    });
+  }
+
+  resultsBox.addEventListener('click', function (e) {
+    var item = e.target.closest('.cg-search-item');
+    if (!item) return;
+    var id = item.getAttribute('data-id');
+    var user = currentResults.find(function (u) { return String(u.id) === String(id); });
+    if (user) selectUser(user);
+  });
+
+  chipsBox.addEventListener('click', function (e) {
+    var btn = e.target.closest('.cg-chip-remove');
+    if (!btn) return;
+    delete selectedUsers[btn.getAttribute('data-id')];
+    renderChips();
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.cg-member-box')) closeResults();
+  });
+
+})();
+</script>
+{% endblock %}

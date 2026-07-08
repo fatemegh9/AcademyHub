@@ -1,4 +1,22 @@
 /* ===== تنظیمات پایه ===== */
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/static/fonts/Vazirmatn-Regular.woff2") format("woff2");
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/static/fonts/Vazirmatn-Medium.woff2") format("woff2");
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/static/fonts/Vazirmatn-Bold.woff2") format("woff2");
+    font-weight: 700;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -7,20 +25,16 @@
 
 body {
     background: #f0f2f5;
-    font-family: 'Vazir', 'Tahoma', sans-serif;
+    font-family: "Vazirmatn", sans-serif;
 }
 
 /* محتوای اصلی */
 .main-content {
-    margin-right: 260px;
+    margin-right: 70px;  /* همیشه 70px */
     padding: 1.5rem;
     min-height: 100vh;
-    transition: margin-right 0.3s ease;
 }
 
-.sidebar.collapsed + .main-content {
-    margin-right: 70px;
-}
 
 /* ===== ریسپانسیو ===== */
 @media (max-width: 768px) {
@@ -66,4 +80,96 @@ body {
 .fields-bar .btn-outline-secondary {
     border: 1px solid #ced4da;
     color: #6c757d;
+}
+
+.toast-container{
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.custom-toast{
+    min-width: 320px;
+    max-width: 420px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    background: linear-gradient(135deg,#122248,#1d3b7a);
+    box-shadow: 0 12px 30px rgba(0,0,0,.25);
+    animation: slideIn .35s ease;
+}
+
+.custom-toast.success{
+    border-left: 4px solid #FFC857;
+}
+
+.custom-toast.error{
+    border-left: 4px solid #ff5c5c;
+}
+
+.custom-toast.warning{
+    border-left: 4px solid #fcbf49;
+}
+
+.toast-icon{
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #FFC857;
+    color: #122248;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.toast-text{
+    flex:1;
+    font-size:14px;
+}
+
+.toast-close{
+    border:none;
+    background:none;
+    color:white;
+    cursor:pointer;
+    font-size:18px;
+    opacity:.7;
+}
+
+.toast-close:hover{
+    opacity:1;
+}
+
+@keyframes slideIn{
+    from{
+        opacity:0;
+        transform:translateX(40px);
+    }
+    to{
+        opacity:1;
+        transform:translateX(0);
+    }
+}
+
+@keyframes modalPop{
+
+    from{
+        opacity:0;
+        transform:scale(.9);
+    }
+
+    to{
+        opacity:1;
+        transform:scale(1);
+    }
+
 }

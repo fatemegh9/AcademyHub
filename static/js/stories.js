@@ -27,7 +27,7 @@ function loadStories() {
                 storyDiv.style.minWidth = '80px';
                 storyDiv.style.cursor = 'pointer';
                 storyDiv.style.display = 'inline-block';
-                storyDiv.onclick = () => showStoryCarousel(userData.stories, user.username);
+                storyDiv.onclick = () => showStoryCarousel(userData.stories, user.username, user.profile_picture);
                 
                 const ringClass = hasStory ? 'story-ring' : 'story-ring no-story';
                 
@@ -45,17 +45,24 @@ function loadStories() {
         .catch(error => console.log('Error loading stories:', error));
 }
 
-function showStoryCarousel(stories, username) {
+let currentStoryUsername = null;
+let currentStoryAvatar = null;
+
+function showStoryCarousel(stories, username, avatarUrl) {
     currentStories = stories;
     currentStoryIndex = 0;
+    currentStoryUsername = username;
+    currentStoryAvatar = avatarUrl;
     if (stories.length > 0) {
         currentStoryId = stories[0].id;
     }
-    updateCarousel(username);
+
+    updateHeader();
+    updateCarousel();
+
     const modal = document.getElementById('storyModal');
     if (modal) modal.style.display = 'block';
-    
-    // نمایش دکمه حذف فقط برای استوری خود کاربر
+
     const deleteBtn = document.getElementById('deleteStoryBtn');
     if (deleteBtn) {
         const myStoryDiv = document.getElementById('my-story');
@@ -64,29 +71,36 @@ function showStoryCarousel(stories, username) {
     }
 }
 
-function updateCarousel(username) {
+function updateHeader() {
+    const nameEl = document.getElementById('stmUsername');
+    const avatarEl = document.getElementById('stmAvatar');
+    if (nameEl) nameEl.textContent = currentStoryUsername || '';
+    if (avatarEl) {
+        avatarEl.innerHTML = currentStoryAvatar
+            ? `<img src="${currentStoryAvatar}" alt="${currentStoryUsername}">`
+            : (currentStoryUsername ? currentStoryUsername.charAt(0).toUpperCase() : '');
+    }
+}
+
+function updateCarousel() {
     const container = document.getElementById('storyCarouselInner');
     if (!container) return;
-    
+
     const story = currentStories[currentStoryIndex];
     if (!story) {
-        container.innerHTML = '<div>استوری وجود ندارد</div>';
+        container.innerHTML = '<div class="stm-text">استوری وجود ندارد</div>';
         return;
     }
-    
-    // به‌روزرسانی currentStoryId
+
     currentStoryId = story.id;
-    
-    let imageHtml = story.image ? `<img src="${story.image}" style="max-width: 100%; max-height: 400px; border-radius: 12px;">` : '';
-    let textHtml = story.text ? `<p style="margin-top: 16px;">${story.text}</p>` : '';
-    
+
+    let imageHtml = story.image ? `<img src="${story.image}" alt="">` : '';
+    let textHtml = story.text ? `<p class="stm-text">${story.text}</p>` : '';
+
     container.innerHTML = `
-        <div>
-            <h6>${username}</h6>
-            ${imageHtml}
-            ${textHtml}
-            <small style="color: gray; display: block; margin-top: 16px;">${new Date(story.created_at).toLocaleString('fa-IR')}</small>
-        </div>
+        ${imageHtml}
+        ${textHtml}
+        <small style="color:#7a8fbb; display:block; margin-top:8px; font-size:12px;">${new Date(story.created_at).toLocaleString('fa-IR')}</small>
     `;
 }
 
@@ -115,39 +129,96 @@ function nextStory() {
 
 function deleteCurrentStory() {
     if (!currentStoryId) return;
-    
-    if (confirm('آیا از حذف این استوری مطمئن هستید؟')) {
-        fetch(`/social/story/delete/${currentStoryId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // حذف از آرایه استوری‌ها
-                currentStories.splice(currentStoryIndex, 1);
-                
-                if (currentStories.length === 0) {
-                    closeStoryModal();
-                    location.reload(); // رفرش صفحه برای به‌روزرسانی لیست استوری‌ها
-                } else {
-                    if (currentStoryIndex >= currentStories.length) {
-                        currentStoryIndex = currentStories.length - 1;
-                    }
-                    updateCarousel();
+
+    const fakeForm = {
+        submit: function() {
+            closeConfirmModal();
+            fetch(`/social/story/delete/${currentStoryId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
                 }
-            } else {
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    currentStories.splice(currentStoryIndex, 1);
+
+                    if (currentStories.length === 0) {
+                        closeStoryModal();
+                        location.reload();
+                    } else {
+                        if (currentStoryIndex >= currentStories.length) {
+                            currentStoryIndex = currentStories.length - 1;
+                        }
+                        updateCarousel();
+                    }
+                } else {
+                    alert('خطا در حذف استوری');
+                }
+            })
+            .catch(error => {
+                console.log('Error:', error);
                 alert('خطا در حذف استوری');
-            }
-        })
-        .catch(error => {
-            console.log('Error:', error);
-            alert('خطا در حذف استوری');
-        });
-    }
+            });
+        }
+    };
+
+    openConfirmModal(
+        fakeForm,
+        'حذف استوری',
+        'آیا از حذف این استوری مطمئن هستید؟ این عملیات قابل بازگشت نیست.'
+    );
+}
+
+function uploadNewStory(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    fetch('/social/story/create/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            return fetch('/social/my-stories/')
+                .then(res => res.json())
+                .then(myData => {
+                    currentStories = myData.stories;
+                    currentStoryIndex = 0;
+                    currentStoryUsername = myData.username;
+                    currentStoryAvatar = myData.profile_picture;
+                    updateHeader();
+                    updateCarousel();
+
+                    const modal = document.getElementById('storyModal');
+                    if (modal) modal.style.display = 'block';
+
+                    const deleteBtn = document.getElementById('deleteStoryBtn');
+                    if (deleteBtn) deleteBtn.style.display = 'block';
+
+                    checkMyStoryAndUpdateRing();
+                });
+        } else {
+            alert(data.error || 'خطا در آپلود استوری');
+        }
+    })
+    .catch(error => {
+        console.log('Error uploading story:', error);
+        alert('خطا در آپلود استوری');
+    })
+    .finally(() => {
+        event.target.value = '';
+    });
 }
 
 function checkMyStoryAndUpdateRing() {
@@ -165,7 +236,7 @@ function checkMyStoryAndUpdateRing() {
                 const myStoryDiv = document.getElementById('my-story');
                 if (myStoryDiv) {
                     myStoryDiv.onclick = () => {
-                        showStoryCarousel(data.stories, data.username);
+                        showStoryCarousel(data.stories, data.username, data.profile_picture);
                     };
                 }
             } else {

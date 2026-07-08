@@ -1,13 +1,21 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Note, Rating, Tag, SavedNote
+from .models import Note, NoteRating, Tag, SavedNote
 from django.db.models import Q, Count
 from .forms import NoteUploadForm
 from django.db import models
 import re
-from social.models import SavedPost
+from django.db.models import Avg, Count
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.db.models.functions import Coalesce
+from social.models import SavedPost, Post
 from django.http import JsonResponse
+from .services.ai_assistant import extract_text_from_pdf, summarize_note, extract_text_from_pdf, ask_question_about_note, generate_quiz_from_note
+import json
+from accounts.services.xp import add_xp
+
 
 def note_list(request):
     query = request.GET.get('q', '')
@@ -44,7 +52,16 @@ def note_list(request):
         notes = notes.filter(university=university_filter)
 
     # دسته‌بندی‌ها
-    most_popular = notes.order_by('-downloads_count')[:10]
+    most_popular = (
+    Note.objects
+    .annotate(
+        avg_rating=Coalesce(
+            Avg('ratings__score'),
+            0.0),
+            ratings_count=Count('ratings')
+    )
+    .order_by('-avg_rating', '-ratings_count')
+)
     newest = notes.order_by('-created_at')[:10]
     
     
@@ -67,32 +84,60 @@ def note_list(request):
 @login_required
 def upload_note(request):
     if request.method == 'POST':
-        form = NoteUploadForm(request.POST, request.FILES)
-        if form.is_valid():
-            note = form.save(commit=False)
-            note.uploaded_by = request.user
-            
-            # دریافت فیلدهای جدید
-            note.level = request.POST.get('level')
-            note.note_type = request.POST.get('note_type')
-            note.university = request.POST.get('university')
-            
-            note.save()
-            
-            # پردازش تگ‌ها
-            tags_input = form.cleaned_data.get('tags_input', '')
-            if tags_input:
-                tags_input = re.sub(r'[،,]', ' ', tags_input) 
-                tag_names = [tag.strip() for tag in re.split(r'[\n\s]+', tags_input) if tag.strip()]
-                for tag_name in tag_names:
-                    tag, created = Tag.objects.get_or_create(name=tag_name)
-                    note.tags.add(tag)
-            
-            messages.success(request, 'جزوه با موفقیت آپلود شد.')
-            return redirect('note_list')
-    else:
-        form = NoteUploadForm()
-    return render(request, 'notes/upload_note.html', {'form': form})
+        note = Note.objects.create(
+            uploaded_by=request.user,
+            title=request.POST.get('title'),
+            lesson_name=request.POST.get('lesson_name'),
+            professor_name=request.POST.get('professor_name'),
+            description=request.POST.get('description'),
+            level=request.POST.get('level'),
+            note_type=request.POST.get('note_type'),
+            university=request.POST.get('university'),
+            file=request.FILES.get('file'),
+        )
+        tags_input = request.POST.get('tags_input', '')
+        if tags_input:
+            tags_input = re.sub(r'[،,]', ' ', tags_input)
+            tag_names = [t.strip() for t in tags_input.split() if t.strip()]
+            for tag_name in tag_names:
+                tag, _ = Tag.objects.get_or_create(name=tag_name)
+                note.tags.add(tag)
+        messages.success(request, 'جزوه با موفقیت آپلود شد.')
+        add_xp(request.user, 10, "آپلود جزوه")
+        return redirect('note_list')
+    return render(request, 'notes/upload_note.html')
+
+
+@login_required
+def edit_note(request, note_id):
+    note = get_object_or_404(Note, id=note_id, uploaded_by=request.user)
+
+    if request.method == 'POST':
+        note.title = request.POST.get('title')
+        note.lesson_name = request.POST.get('lesson_name')
+        note.professor_name = request.POST.get('professor_name')
+        note.description = request.POST.get('description')
+        note.level = request.POST.get('level')
+        note.note_type = request.POST.get('note_type')
+        note.university = request.POST.get('university')
+
+        if request.FILES.get('file'):
+            note.file = request.FILES['file']
+
+        note.save()
+
+        tags_input = request.POST.get('tags_input', '')
+        note.tags.clear()
+        if tags_input:
+            tags_input = re.sub(r'[،,]', ' ', tags_input)
+            tag_names = [t.strip() for t in tags_input.split() if t.strip()]
+            for tag_name in tag_names:
+                tag, _ = Tag.objects.get_or_create(name=tag_name)
+                note.tags.add(tag)
+
+        messages.success(request, 'جزوه با موفقیت ویرایش شد.')
+        return redirect('note_list')
+    return render(request, 'notes/upload_note.html', {'note': note})
 
 @login_required
 def download_note(request, note_id):
@@ -100,20 +145,6 @@ def download_note(request, note_id):
     note.downloads_count += 1
     note.save()
     return redirect(note.file.url)
-
-@login_required
-def edit_note(request, note_id):
-    note = get_object_or_404(Note, id=note_id)
-    if note.uploaded_by != request.user:
-        messages.error(request, 'شما اجازه ویرایش این جزوه را ندارید.')
-        return redirect('note_list')
-    
-    if request.method == 'POST':
-        note.title = request.POST.get('title')
-        note.description = request.POST.get('description')
-        note.save()
-        messages.success(request, 'جزوه با موفقیت ویرایش شد.')
-    return redirect('note_list')
 
 @login_required
 def delete_note(request, note_id):
@@ -126,29 +157,18 @@ def delete_note(request, note_id):
     return redirect('note_list')
 
 @login_required
-def rate_note(request, note_id):
+def rate_note(request, note_id, score):
+
     note = get_object_or_404(Note, id=note_id)
 
-    if request.method == 'POST':
-        score = int(request.POST.get('score', 0))
-        if 1 <= score <= 5:
-            rating, created = Rating.objects.get_or_create(
-                user=request.user,
-                note=note,
-                defaults={'score': score}
-            )
-            if not created:
-                rating.score = score
-                rating.save()
+    NoteRating.objects.update_or_create(
+        note=note,
+        user=request.user,
+        defaults={
+            'score': score
+        }
+    )
 
-            avg = note.ratings.aggregate(models.Avg('score'))['score__avg']
-            note.average_rating = round(avg, 1)
-            note.save()
-            
-            messages.success(request, f'امتیاز شما ثبت شد. میانگین: {note.average_rating}')
-        else:
-            messages.error(request, 'امتیاز نامعتبر است')
-    
     return redirect('note_list')
 
 def search_by_tag(request, slug):
@@ -173,7 +193,7 @@ def unsave_note(request, note_id):
     note = get_object_or_404(Note, id=note_id)
     SavedNote.objects.filter(user=request.user, note=note).delete()
     messages.success(request, 'جزوه از لیست ذخیره شده‌ها حذف شد.')
-    return redirect('note_list')
+    return redirect('saved_items')
 
 @login_required
 def saved_notes_list(request):
@@ -209,3 +229,54 @@ def get_note_json(request, note_id):
         'average_rating': note.average_rating,
         'download_url': note.file.url,
     })
+
+
+@login_required
+def summarize_note_view(request, note_id):
+    note = get_object_or_404(Note, id=note_id)
+
+    text = extract_text_from_pdf(note.file.path)
+
+    if not text:
+        return JsonResponse({'error': 'متن جزوه قابل استخراج نیست.'}, status=400)
+
+    summary = summarize_note(text)
+
+    return JsonResponse({'summary': summary})
+
+@login_required
+def ask_note_view(request, note_id):
+    note = get_object_or_404(Note, id=note_id)
+
+    if request.method == 'POST':
+        question = request.POST.get('question', '')
+        if not question:
+            return JsonResponse({'error': 'سوالی وارد نشده.'}, status=400)
+
+        text = extract_text_from_pdf(note.file.path)
+        if not text:
+            return JsonResponse({'error': 'متن جزوه قابل استخراج نیست.'}, status=400)
+
+        answer = ask_question_about_note(text, question)
+        return JsonResponse({'answer': answer})
+
+    return JsonResponse({'error': 'متد نامعتبر'}, status=400)
+
+@login_required
+def generate_quiz_view(request, note_id):
+    note = get_object_or_404(Note, id=note_id)
+
+    text = extract_text_from_pdf(note.file.path)
+    if not text:
+        return JsonResponse({'error': 'متن جزوه قابل استخراج نیست.'}, status=400)
+
+    quiz_raw = generate_quiz_from_note(text)
+
+    try:
+        # حذف بک‌تیک‌های احتمالی که مدل گاهی برمی‌گرداند
+        clean = quiz_raw.strip().removeprefix('```json').removeprefix('```').removesuffix('```').strip()
+        quiz_data = json.loads(clean)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'خطا در پردازش خروجی AI.'}, status=500)
+
+    return JsonResponse({'quiz': quiz_data})

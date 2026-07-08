@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}پیام‌ها{% endblock %}
+
+{% block content %}
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+.inbox-wrap{direction:rtl;max-width:500px;margin:0 auto;padding:2rem 1rem;}
+.inbox-title{font-size:20px;font-weight:700;color:#122248;margin-bottom:1.25rem;}
+
+.conv-item{display:flex;align-items:center;gap:8px;padding:14px;border-radius:14px;border:1px solid #eee;background:#fff;margin-bottom:10px;transition:border-color .15s;}
+.conv-item:hover{border-color:#c5d3ec;}
+
+.conv-link{flex:1;min-width:0;display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;}
+
+.conv-avatar{width:44px;height:44px;border-radius:50%;background:#eef2fa;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#1d3b7a;flex-shrink:0;overflow:hidden;}
+.conv-avatar img{width:100%;height:100%;object-fit:cover;}
+.conv-body{flex:1;min-width:0;}
+.conv-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
+.conv-name{font-size:14px;font-weight:600;color:#122248;}
+.conv-time{font-size:11px;color:#9ca3af;}
+.conv-preview{font-size:13px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.unread-badge{background:#f5b400;color:#5c4400;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;flex-shrink:0;}
+.empty-inbox{text-align:center;color:#9ca3af;font-size:14px;padding:40px 0;}
+
+/* مکالمه‌های نخونده یه نشانگر زرد کنارشون می‌گیرن تا توی لیست زود پیدا بشن */
+.conv-item.conv-item-unread{
+    box-shadow: inset 3px 0 0 #f5b400;
+}
+
+/* ── دکمه‌ی حذف گروه (فقط برای سازنده‌ی گروه) ── */
+.conv-delete-form{flex-shrink:0;}
+.conv-delete-btn{
+    width:32px;
+    height:32px;
+    border-radius:9px;
+    border:1px solid #f1d4d4;
+    background:#fdf2f2;
+    color:#c0392b;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:background .15s, border-color .15s;
+}
+.conv-delete-btn:hover{background:#c0392b;border-color:#c0392b;color:#fff;}
+</style>
+
+<div class="inbox-wrap">
+  <div class="inbox-title">پیام‌ها</div>
+  <a href="{% url 'create_group' %}" style="display:inline-block;margin-bottom:1rem;background:#122248;color:#fff;text-decoration:none;padding:8px 16px;border-radius:10px;font-size:13px;">+ ساخت گروه</a>
+
+  {% for item in conversations %}
+  <div class="conv-item{% if item.unread_count > 0 %} conv-item-unread{% endif %}">
+    <a href="{% url 'conversation_detail' item.conversation.id %}" class="conv-link">
+      <div class="conv-avatar">
+          {% if item.conversation.is_group %}
+          👥
+          {% elif item.other_user.profile_picture %}
+          <img src="{{ item.other_user.profile_picture.url }}">
+          {% else %}
+          {{ item.other_user.username|first|upper }}
+          {% endif %}
+      </div>
+      <div class="conv-body">
+          <div class="conv-top">
+              <span class="conv-name">{% if item.conversation.is_group %}{{ item.conversation.name }}{% else %}{{ item.other_user.username }}{% endif %}</span>
+          {% if item.last_message %}
+          <span class="conv-time">{{ item.last_message.created_at|timesince }} پیش</span>
+          {% endif %}
+        </div>
+        <div class="conv-preview">
+          {% if item.last_message %}{{ item.last_message.text }}{% else %}شروع گفتگو{% endif %}
+        </div>
+      </div>
+    </a>
+
+    {% if item.unread_count > 0 %}
+    <span class="unread-badge">{{ item.unread_count }}</span>
+    {% endif %}
+
+    {% if item.conversation.is_group and item.conversation.created_by == request.user %}
+    <form method="post"
+      action="{% url 'delete_group' item.conversation.id %}"
+      class="conv-delete-form"
+      onsubmit="event.preventDefault(); openConfirmModal(
+        this,
+        'حذف گروه',
+        'آیا از حذف گروه «{{ item.conversation.name }}» مطمئن هستید؟ این عملیات قابل بازگشت نیست.'
+      );">
+      {% csrf_token %}
+      <button type="submit" class="conv-delete-btn" title="حذف گروه" aria-label="حذف گروه">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          <path d="M10 11v6"/>
+          <path d="M14 11v6"/>
+          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+        </svg>
+      </button>
+    </form>
+    {% endif %}
+    {% if not item.conversation.is_group %}
+<form method="post"
+      action="{% url 'delete_conversation' item.conversation.id %}"
+      class="conv-delete-form"
+      onsubmit="event.preventDefault(); openConfirmModal(
+        this,
+        'حذف گفتگو',
+        'آیا از حذف کامل این گفتگو مطمئن هستید؟'
+      );">
+    {% csrf_token %}
+    <button type="submit"
+            class="conv-delete-btn"
+            title="حذف گفتگو"
+            aria-label="حذف گفتگو">
+
+        <svg width="15" height="15" viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2"
+             stroke-linecap="round"
+             stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6"/>
+            <path d="M14 11v6"/>
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+        </svg>
+
+    </button>
+</form>
+{% endif %}
+  </div>
+  {% empty %}
+  <div class="empty-inbox">هنوز پیامی نداری</div>
+  {% endfor %}
+</div>
+{% endblock %}

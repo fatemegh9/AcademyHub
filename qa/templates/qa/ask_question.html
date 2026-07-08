@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block title %}پرسیدن سوال جدید{% endblock %}
+
+{% block content %}
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+.qa-form-wrap{direction:rtl;max-width:480px;margin:0 auto;padding:2rem 1rem;}
+.qa-form-card{background:#fff;border:1px solid #eee;border-radius:18px;padding:1.75rem;box-shadow:0 4px 20px rgba(0,0,0,0.06);}
+.qa-form-title{font-size:20px;font-weight:600;margin-bottom:1.5rem;color:#122248;}
+
+/* باکس نکته بالای فرم — جای کلاسیک زرد برای راهنمایی، نه خطا */
+.qa-tip-box{
+    background:#fff8e1;
+    border:1px solid #ffe19a;
+    color:#8a5b00;
+    font-size:13px;
+    line-height:1.6;
+    border-radius:10px;
+    padding:12px 14px;
+    margin-bottom:1.25rem;
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+}
+.qa-tip-box .qa-tip-icon{flex-shrink:0;}
+
+.qa-label{display:block;font-size:13px;font-weight:600;color:#7a8fbb;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;}
+
+/* نقطه‌ی زرد کنار فیلدهای اجباری، به جای ستاره‌ی قرمز */
+.qa-required-dot{
+    display:inline-block;
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:#f5b400;
+    margin:0 3px;
+    vertical-align:middle;
+}
+
+/* بج «اختیاری» برای فیلدهایی که نیازی به پر شدن ندارن */
+.qa-optional-badge{
+    display:inline-block;
+    background:#fff3d6;
+    color:#8a5b00;
+    border:1px solid #ffe19a;
+    font-size:10px;
+    font-weight:600;
+    text-transform:none;
+    letter-spacing:0;
+    padding:2px 8px;
+    border-radius:99px;
+    vertical-align:middle;
+    margin:0 4px;
+}
+
+.qa-field{margin-bottom:1.1rem;}
+.qa-input,.qa-select,.qa-textarea{width:100%;background:#f7f9ff;border:1px solid #dce4f3;border-radius:10px;padding:12px 14px;font-size:14px;color:#122248;outline:none;font-family:inherit;transition:border-color .2s, box-shadow .2s;}
+.qa-input:focus,.qa-select:focus,.qa-textarea:focus{border-color:#2b5cd9;background:#fff;box-shadow:0 0 0 3px rgba(43,92,217,.1);}
+.qa-textarea{min-height:120px;resize:none;line-height:1.6;}
+
+/* هشدار نرم زرد وقتی توضیح خیلی کوتاهه — مسدودکننده نیست، فقط راهنماست */
+.qa-textarea.qa-textarea-warn{border-color:#f5b400;box-shadow:0 0 0 3px rgba(245,180,0,.12);}
+.qa-char-hint{display:none;font-size:11px;color:#8a5b00;margin-top:6px;}
+.qa-char-hint.show{display:block;}
+
+.qa-submit{
+    width:100%;
+    background:linear-gradient(135deg,#122248,#1d3b7a);
+    color:#fff;
+    border:none;
+    border-radius:10px;
+    padding:13px;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    margin-top:6px;
+    transition:background .2s, transform .2s, box-shadow .2s;
+}
+.qa-submit:hover{
+    transform:translateY(-3px);
+    box-shadow:0 6px 16px rgba(0,0,0,0.1);
+}
+</style>
+
+<div class="qa-form-wrap">
+  <div class="qa-form-card">
+    <div class="qa-form-title">پرسیدن سوال جدید</div>
+
+    <form method="post" action="{% url 'ask_question' %}">
+      {% csrf_token %}
+
+      <div class="qa-field">
+        <label class="qa-label">عنوان سوال<span class="qa-required-dot" title="فیلد اجباری"></span></label>
+        <input type="text" name="title" class="qa-input" placeholder="مثال: فرق پشته و صف چیه؟" required>
+      </div>
+
+      <div class="qa-field">
+        <label class="qa-label">مرتبط با جزوه<span class="qa-optional-badge">اختیاری</span></label>
+        <select name="note_id" class="qa-select">
+          <option value="">بدون انتخاب جزوه</option>
+          {% for note in notes %}
+          <option value="{{ note.id }}">{{ note.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="qa-field">
+        <label class="qa-label">نام درس<span class="qa-optional-badge">اختیاری</span></label>
+        <input type="text" name="lesson_name" class="qa-input" placeholder="مثال: ساختمان داده">
+      </div>
+
+      <div class="qa-field">
+        <label class="qa-label">توضیح کامل سوال<span class="qa-required-dot" title="فیلد اجباری"></span></label>
+        <textarea name="body" id="qaBody" class="qa-textarea" placeholder="جزئیات سوالت رو بنویس..." required></textarea>
+        <span class="qa-char-hint" id="qaBodyHint">توضیح بیشتری بده تا دیگران بهتر بتونن جوابت رو بدن</span>
+      </div>
+
+      <button type="submit" class="qa-submit">ثبت سوال</button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+  var bodyField = document.getElementById('qaBody');
+  var hint = document.getElementById('qaBodyHint');
+  if(!bodyField || !hint) return;
+
+  function checkLength(){
+    var len = bodyField.value.trim().length;
+    if(len > 0 && len < 20){
+      bodyField.classList.add('qa-textarea-warn');
+      hint.classList.add('show');
+    } else {
+      bodyField.classList.remove('qa-textarea-warn');
+      hint.classList.remove('show');
+    }
+  }
+
+  bodyField.addEventListener('input', checkLength);
+})();
+</script>
+{% endblock %}

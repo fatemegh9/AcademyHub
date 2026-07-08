@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'accounts',
     'notes',
     'social',
+    'qa',
+    'chat',
 ]
 
 MIDDLEWARE = [
@@ -141,4 +143,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+AVALAI_API_KEY = "aa-Dqzw1qfBWRezcJbhXjiV5zr1qGqqoLT3h98INqROHOLSCfQ1"
+AVALAI_BASE_URL = "https://api.avalai.ir/v1"
 #STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30

@@ -7,10 +7,44 @@ class Post(models.Model):
     content = models.TextField(max_length=500)
     image = models.ImageField(upload_to='post_images/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    tags = models.ManyToManyField('notes.Tag', blank=True, related_name='posts')
 
     def __str__(self):
         return f"{self.author.username}: {self.content[:50]}"
+    
+
+class PostMedia(models.Model):
+
+    IMAGE = 'image'
+    VIDEO = 'video'
+
+    TYPE_CHOICES = [
+        (IMAGE, 'Image'),
+        (VIDEO, 'Video'),
+    ]
+
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='media'
+    )
+
+    file = models.FileField(
+        upload_to='post_media/'
+    )
+
+    media_type = models.CharField(
+        max_length=10,
+        choices=TYPE_CHOICES
+    )
+
+    order = models.PositiveIntegerField(
+        default=0
+    )
+
+    def __str__(self):
+        return f"{self.media_type} - {self.post.id}"
     
 class Like(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -38,19 +72,23 @@ class Notification(models.Model):
         ('like', 'لایک'),
         ('comment', 'کامنت'),
         ('comment_like', 'لایک کامنت'),
+        ('new_answer', 'پاسخ جدید'),
+        ('new_message', 'پیام جدید'),
     )
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_notifications')
     post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True)
+    question_id = models.IntegerField(null=True, blank=True)
+    # رفرنس رشته‌ای به مدل اپ chat، تا نیازی به ایمپورت مستقیم بین اپ‌ها نباشه
+    conversation = models.ForeignKey('chat.Conversation', on_delete=models.CASCADE, null=True, blank=True)
     notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
-
     def __str__(self):
         return f"{self.sender.username} {self.get_notification_type_display()} - {self.user.username}"
-    
+
     class Meta:
         ordering = ['created_at']
 

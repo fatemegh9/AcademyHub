@@ -43,19 +43,19 @@
     border-radius: 12px;
     padding: 12px;
     cursor: pointer;
-    background: rgba(255,255,255,.05);
+    background: #274682;
 
     position: relative;
     overflow: hidden;
-
+    overflow-x: hidden !important;
     transition: all .3s ease;
 }
 
 .note-card:hover{
-    transform: translateY(-6px);
-    background: rgba(255,255,255,.10);
-    box-shadow: 0 12px 25px rgba(0,0,0,.30);
-    border-color: rgba(255,255,255,.35);
+    transform: translateY(-8px);
+    background:#315393;
+    box-shadow:0 18px 40px rgba(0,0,0,.35);
+    border-color:#4f7fd8;
 }
 
 .note-card::before{
@@ -85,7 +85,7 @@
 }
 
 .upload-note-btn{
-    background: linear-gradient(135deg,#122248,#1d3b7a);
+    background:linear-gradient(135deg,#315393,#1C3368);
     color: white;
     text-decoration: none;
     padding: 22px 28px;
@@ -130,19 +130,150 @@
     transform: rotate(90deg) scale(1.1);
     background: rgba(255,255,255,.25);
 }
+
+.rating-box{
+    display:flex;
+    gap:4px;
+    margin-top:8px;
+    margin-bottom:10px;
+}
+
+.rating-star{
+    text-decoration:none;
+    font-size:15px;
+    transition:.2s;
+}
+
+.rating-star:hover{
+    transform:scale(1.25);
+}
+
+.current-rating{
+    color:#f5b400;
+    font-size:13px;
+    font-weight:700;
+    margin-top:6px;
+}
+
+.ai-summary-btn{
+    background:#315393;
+    color:#fff;
+    border:none;
+    border-radius:10px;
+    padding:9px 15px;
+    font-size:13px;
+    cursor:pointer;
+    margin-top:8px;
+    font-weight:600;
+}
+.ai-summary-btn:hover{ background:#3f6cc2;}
+.ai-summary-box{
+    margin-top:10px;
+    background:#f7f9ff;
+    border:1px solid #dce4f3;
+    border-radius:10px;
+    padding:14px;
+    font-size:13px;
+    line-height:1.8;
+    color:#374151;
+}
+.ai-summary-box.hidden{ display:none; }
+
+.ai-ask-box{
+    margin-top:10px;
+    background:#f7f9ff;
+    border:1px solid #dce4f3;
+    border-radius:10px;
+    padding:12px;
+}
+.ai-ask-box.hidden{ display:none; }
+.ai-ask-input{
+    width:100%;
+    padding:8px 12px;
+    border-radius:8px;
+    border:1px solid #dce4f3;
+    font-size:13px;
+    margin-bottom:8px;
+}
+.ai-ask-send{
+    background:#122248;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    padding:6px 14px;
+    font-size:12px;
+    cursor:pointer;
+}
+.ai-ask-send:hover{ background:#1d3b7a; }
+.ai-ask-answer{
+    margin-top:10px;
+    font-size:13px;
+    line-height:1.8;
+    color:#374151;
+}
+
+.ai-quiz-box{
+    margin-top:10px;
+    background:#f7f9ff;
+    border:1px solid #dce4f3;
+    border-radius:10px;
+    padding:14px;
+    font-size:13px;
+    color:#374151;
+}
+.ai-quiz-box.hidden{ display:none; }
+.quiz-question{
+    margin-bottom:14px;
+    padding-bottom:10px;
+    border-bottom:1px solid #e5e7eb;
+}
+.quiz-question-text{
+    font-weight:600;
+    color:#122248;
+    margin-bottom:8px;
+}
+.quiz-option{
+    display:block;
+    padding:6px 10px;
+    margin-bottom:4px;
+    border-radius:6px;
+    background:#fff;
+    border:1px solid #e5e7eb;
+    cursor:pointer;
+}
+.quiz-option.correct{
+    background:#dcfce7;
+    border-color:#86efac;
+}
+
+.ai-close-btn{
+    float:left;
+    background:transparent;
+    border:none;
+    color:#9ca3af;
+    font-size:16px;
+    cursor:pointer;
+    padding:2px 6px;
+    border-radius:6px;
+}
+.ai-close-btn:hover{
+    background:#e5e7eb;
+    color:#374151;
+}
+
 </style>
 
 <div class="upload-note-wrapper">
     <a href="{% url 'upload_note' %}" class="upload-note-btn">
         <div>
-            <div class="upload-title">📚 آپلود جزوه جدید</div>
+            <div class="upload-title" style="color:white;">📚 آپلود جزوه جدید</div>
             <div class="upload-subtitle">
                 جزوه‌هات رو با بقیه دانشجوها به اشتراک بذار
             </div>
         </div>
 
         <div class="upload-icon">
-            ➕
+            <i class="fas fa-plus" style="color: #f5b400; font-size: 30px;"></i>
         </div>
     </a>
 </div>
@@ -162,7 +293,7 @@
         ">
 
             <h3 style="color:white;">
-                🔍 نتایج جستجو برای "{{ search_query }}"
+                🔍 نتایج جستجو  
             </h3>
 
             <hr>
@@ -193,7 +324,7 @@
 
                 </div>
                 {% empty %}
-                <div class="alert alert-warning">
+                <div class="alert alert-warning" style="color:white">
                     هیچ نتیجه‌ای پیدا نشد.
                 </div>
                 {% endfor %}
@@ -205,10 +336,12 @@
         {% else %}
 
         <!-- باکس 1: محبوب‌ترین -->
-        <div style="background: linear-gradient(135deg,#122248,#1d3b7a); border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px white; margin-bottom: 20px;">
-            <h3 style="color: white;">🔥 محبوب‌ترین جزوه‌ها</h3>
+        <div style="background:#1C3368; border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px white; margin-bottom: 20px;">
+            <h3 style="color:white;">🔥 محبوب‌ترین جزوه‌ها</h3>
             <hr>
-            <div style="display: flex; gap: 15px; overflow-x: auto; padding: 10px 0;">
+            <div class="hide-scrollbar" style="display: grid;
+grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+gap: 20px;">
                 {% for note in most_popular %}
                 <div class="note-card">
                     <h5 style="color:white;">{{ note.title|truncatewords:5 }}</h5>
@@ -217,7 +350,9 @@
                         📥 {{ note.downloads_count }} دانلود
                     </p>
 
-                    <a href="{% url 'download_note' note.id %}" style="color:white;">
+                    <a href="{% url 'download_note' note.id %}"
+                    class="btn btn-warning btn-sm"
+                    style="font-weight:400; color: white;">
                         📥 دانلود
                     </a>
 
@@ -227,9 +362,10 @@
                                 📁 حذف از ذخیره‌ها
                             </a>
                         {% else %}
-                            <a href="{% url 'save_note' note.id %}" class="btn btn-sm btn-outline-warning" style="color:white;">
+                            <a href="{% url 'save_note' note.id %}" class="btn btn-sm btn-outline-warning"style="color:#1d3b7a;">
                                 📁 ذخیره
                             </a>
+
                         {% endif %}
                     {% endif %}
                 </div>
@@ -240,31 +376,73 @@
         </div>
 
         <!-- باکس 2: جدیدترین -->
-        <div style="background: linear-gradient(135deg,#122248,#1d3b7a); border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div style="background:#1C3368; border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
             <h3 style="color:white;">🆕 جدیدترین جزوه‌ها</h3>
             <hr>
-            <div style="display: flex; gap: 15px; overflow-x: auto; padding: 10px 0;">
+            <div class="hide-scrollbar" style="display: grid;
+grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+gap: 20px;">
                 {% for note in newest %}
                 <div class="note-card">
                     <h5 style="color:white;">{{ note.title|truncatewords:5 }}</h5>
                     <p style="font-size: 12px; color: gray;">{{ note.lesson_name }}</p>
                     <p style="font-size: 11px; color:white;">📅 {{ note.created_at|date:"Y/m/d" }}</p>
-                    <a href="{% url 'download_note' note.id %}" style="color:white;">📥 دانلود</a>
+
+                        <div class="current-rating">
+                            ⭐ {{ note.average_rating|floatformat:1 }}
+                        </div>
+
+                        <div class="rating-box">
+                            {% for i in "12345" %}
+                                <a href="{% url 'rate_note' note.id i %}"
+                                class="rating-star">
+                                    ⭐
+                                </a>
+                            {% endfor %}
+                        </div>
+
+
+                    <a href="{% url 'download_note' note.id %}"
+                    class="btn btn-warning btn-sm"
+                    style="font-weight:400;color: white;">
+                        📥 دانلود
+                    </a>
+
+
 
                                         <!-- دکمه ذخیره جزوه (فقط برای کاربرانی که خودشان آپلود نکرده‌اند) -->
                     {% if request.user != note.uploaded_by %}
                         {% if request.user in note.saved_by.all %}
-                        <a href="{% url 'unsave_note' note.id %}" class="btn btn-sm btn-warning" style="color:white;">📁 حذف از ذخیره‌ها</a>
+                        <a href="{% url 'unsave_note' note.id %}" class="btn btn-sm btn-warning" style="color:#1d3b7a">📁 حذف از ذخیره‌ها</a>
                         {% else %}
-                        <a href="{% url 'save_note' note.id %}" class="btn btn-sm btn-outline-warning" style="color:white;">📁 ذخیره</a>
+                        <a href="{% url 'save_note' note.id %}" class="btn btn-sm btn-outline-warning" style="color:#1d3b7a;">📁 ذخیره</a>
                         {% endif %}
                     {% endif %}
+                        <button onclick="getSummary({{ note.id }})" class="ai-summary-btn">✨ خلاصه با AI</button>
+                        <div id="summary-box-{{ note.id }}" class="ai-summary-box hidden">
+                            <button onclick="closeBox('summary-box-{{ note.id }}')" class="ai-close-btn">✕</button>
+                            <div id="summary-content-{{ note.id }}"></div>
+                        </div>
 
+                        <button onclick="toggleAskBox({{ note.id }})" class="ai-summary-btn">💬 پرسش از جزوه</button>
+                        <div id="ask-box-{{ note.id }}" class="ai-ask-box hidden">
+                            <button onclick="closeBox('ask-box-{{ note.id }}')" class="ai-close-btn">✕</button>
+                            <input type="text" id="ask-input-{{ note.id }}" placeholder="سوالت رو از جزوه بپرس..." class="ai-ask-input">
+                            <button onclick="sendQuestion({{ note.id }})" class="ai-ask-send">پرسیدن</button>
+                            <div id="ask-answer-{{ note.id }}" class="ai-ask-answer"></div>
+                        </div>
+
+                        <button onclick="generateQuiz({{ note.id }})" class="ai-summary-btn">📝 تولید سوال تست</button>
+                        <div id="quiz-box-{{ note.id }}" class="ai-quiz-box hidden">
+                            <button onclick="closeBox('quiz-box-{{ note.id }}')" class="ai-close-btn">✕</button>
+                            <div id="quiz-content-{{ note.id }}"></div>
+                        </div>
                 </div>
                 {% empty %}
                 <p>هیچ جزوه‌ای وجود ندارد.</p>
                 {% endfor %}
             </div>
+
         </div>
     {% endif %}
     </div>  
@@ -272,18 +450,18 @@
     <div style="flex: 1; min-width: 250px; order: 2;height: 600px; overflow-y: auto;">
         
         <!-- باکس جستجو -->
-        <div style="background: linear-gradient(135deg,#122248,#1d3b7a); border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px white; margin-bottom: 20px;">
+        <div style="background: radial-gradient(circle, #2956b2, #122248); border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px white; margin-bottom: 20px;">
             <h5 style="color:white;">🔍 جستجو</h5>
             <hr>
             <form method="get" action="{% url 'note_list' %}">
                 <input type="text" name="q" value="{{ search_query }}" placeholder="عنوان، درس، استاد..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px;">
-                <button type="submit" style="width: 100%; padding: 8px; background: white; color: #14203c; border: none; border-radius: 8px;">جستجو</button>
+                <button type="submit" style="width: 100%; padding: 8px; background: #f5b400; color: #0a0b0f; border: none; border-radius: 8px; font-weight: 700;">جستجو</button>
             </form>
         </div>
         
         <!-- باکس رشته‌ها -->
         <!-- باکس فیلترها -->
-<div style="background: linear-gradient(135deg,#122248,#1d3b7a); border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px white; margin-bottom: 20px;">
+<div style="background: radial-gradient(circle, #2956b2, #122248); border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px white; margin-bottom: 20px;">
     <h5 style="color:white;">🔍 فیلترهای پیشرفته</h5>
     <hr>
     <form method="get" action="{% url 'note_list' %}">
@@ -326,7 +504,7 @@
             </select>
         </div>
         
-        <button type="submit" style="width: 100%; padding: 10px; background: white; color: #14203c; border: none; border-radius: 8px;">اعمال فیلتر</button>
+        <button type="submit" style="width: 100%; padding: 10px; background: #f5b400; color: #0a0b0f; border: none; border-radius: 8px; font-weight: 700;">اعمال فیلتر</button>
         
         {% if selected_level or selected_type or selected_university or search_query %}
         <a href="{% url 'note_list' %}" style="display: block; text-align: center; margin-top: 10px; color: #dc3545; text-decoration: none;">حذف همه فیلترها</a>
@@ -337,4 +515,129 @@
 
 </div>
 
+<script>
+function getSummary(noteId) {
+    const box = document.getElementById('summary-box-' + noteId);
+    const content = document.getElementById('summary-content-' + noteId);
+    box.classList.remove('hidden');
+    content.innerHTML = 'در حال خلاصه‌سازی... ⏳';
+
+    fetch(`/notes/summarize/${noteId}/`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                content.innerHTML = '❌ ' + data.error;
+            } else {
+                content.innerHTML = data.summary.replace(/\n/g, '<br>');
+            }
+        })
+        .catch(() => {
+            content.innerHTML = '❌ خطا در ارتباط با سرور';
+        });
+}
+
+function closeBox(boxId) {
+    document.getElementById(boxId).classList.add('hidden');
+}
+
+function toggleAskBox(noteId) {
+    const box = document.getElementById('ask-box-' + noteId);
+    box.classList.toggle('hidden');
+}
+
+function sendQuestion(noteId) {
+    const input = document.getElementById('ask-input-' + noteId);
+    const answerBox = document.getElementById('ask-answer-' + noteId);
+    const question = input.value.trim();
+
+    if (!question) return;
+
+    answerBox.innerHTML = 'در حال پاسخ‌دهی... ⏳';
+
+    fetch(`/notes/ask/${noteId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: `question=${encodeURIComponent(question)}`
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            answerBox.innerHTML = '❌ ' + data.error;
+        } else {
+            answerBox.innerHTML = data.answer.replace(/\n/g, '<br>');
+        }
+    })
+    .catch(() => {
+        answerBox.innerHTML = '❌ خطا در ارتباط با سرور';
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function generateQuiz(noteId) {
+    const box = document.getElementById('quiz-box-' + noteId);
+    const content = document.getElementById('quiz-content-' + noteId);
+    box.classList.remove('hidden');
+    content.innerHTML = 'در حال تولید سوالات... ⏳';
+
+    fetch(`/notes/quiz/${noteId}/`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                content.innerHTML = '❌ ' + data.error;
+                return;
+            }
+            renderQuiz(content, data.quiz);
+        })
+        .catch(() => {
+            content.innerHTML = '❌ خطا در ارتباط با سرور';
+        });
+}
+
+function renderQuiz(box, quiz) {
+    box.innerHTML = '';
+    quiz.forEach((q, qIndex) => {
+        const qDiv = document.createElement('div');
+        qDiv.className = 'quiz-question';
+
+        const qText = document.createElement('div');
+        qText.className = 'quiz-question-text';
+        qText.textContent = (qIndex + 1) + '. ' + q.question;
+        qDiv.appendChild(qText);
+
+        q.options.forEach((opt, optIndex) => {
+            const optDiv = document.createElement('div');
+            optDiv.className = 'quiz-option';
+            optDiv.textContent = opt;
+            optDiv.onclick = function() {
+                if (optIndex === q.correct_index) {
+                    optDiv.classList.add('correct');
+                } else {
+                    optDiv.style.background = '#fee2e2';
+                    optDiv.style.borderColor = '#fca5a5';
+                }
+            };
+            qDiv.appendChild(optDiv);
+        });
+
+        box.appendChild(qDiv);
+    });
+}
+</script>
 {% endblock %}

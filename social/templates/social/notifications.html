@@ -91,6 +91,7 @@
 }
 .icon-like    { background: #FBEAF0; }
 .icon-comment { background: #E6F1FB; }
+.icon-message { background: #E3E8FB; }
 .read-btn {
     font-size: 12px;
     padding: 4px 12px;
@@ -132,13 +133,21 @@
                         روی پست شما کامنت گذاشت
                     {% elif notification.notification_type == 'comment_like' %}
                         به کامنت شما لایک کرد
+                    {% elif notification.notification_type == 'new_answer' %}
+                        به سوال شما پاسخ داد        
+                    {% elif notification.notification_type == 'new_message' %}
+                        در گروه «{{ notification.conversation.name }}» پیام جدید فرستاد
                     {% else %}
                         اعلان جدید دارید
                     {% endif %}
                 </p>
                 <div class="notif-meta">
                     🕐 {{ notification.created_at|timesince }} پیش
-                    {% if notification.post %}
+                    {% if notification.question_id %}
+                    · <a href="{% url 'question_detail' notification.question_id %}">مشاهده سوال</a>
+                    {% elif notification.conversation %}
+                    · <a href="{% url 'conversation_detail' notification.conversation.id %}">مشاهده گفتگو</a>
+                    {% elif notification.post %}
                     · <a href="{% url 'timeline' %}">مشاهده پست</a>
                     {% endif %}
                     {% if not notification.is_read %}
@@ -147,8 +156,13 @@
                 </div>
             </div>
 
-            <div class="notif-icon {% if notification.notification_type == 'like' or notification.notification_type == 'comment_like' %}icon-like{% else %}icon-comment{% endif %}">
-                {% if notification.notification_type == 'comment' %}💬{% else %}❤️{% endif %}
+            <div class="notif-icon
+                {% if notification.notification_type == 'like' or notification.notification_type == 'comment_like' %}icon-like
+                {% elif notification.notification_type == 'new_message' %}icon-message
+                {% else %}icon-comment{% endif %}">
+                {% if notification.notification_type == 'like' or notification.notification_type == 'comment_like' %}❤️
+                {% elif notification.notification_type == 'new_message' %}✉️
+                {% else %}💬{% endif %}
             </div>
 
         </div>

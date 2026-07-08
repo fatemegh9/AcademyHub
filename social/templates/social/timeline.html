@@ -2,198 +2,328 @@
 {% load static %}
 {% block title %}تایم‌لاین{% endblock %}
 {% block content %}
-<!-- بخش استوری‌ها -->
-<div class="stories-container mb-4">
-    <div class="d-flex gap-3 overflow-auto pb-2">
-        
-<!-- استوری خود کاربر -->
-<div class="stories-container mb-4" style="overflow-x: auto; white-space: nowrap;">
-    <div style="display: inline-flex; gap: 16px; direction: rtl;">
-        
-        <!-- استوری خود کاربر (همان آیکون پروفایل) -->
-<div id="my-story" class="story-item text-center" style="min-width: 80px; flex-shrink: 0; cursor: pointer;">
-    <div id="myStoryRing" class="story-ring">
-        <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}/media/profiles/default.png{% endif %}" 
-             alt="avatar" style="width: 70px; height: 70px; object-fit: cover;">
-    </div>
-    <small class="text-muted d-block mt-1">تو</small>
-    <div class="plus-icon">+</div>
-    
-    <!-- فرم مخفی برای آپلود استوری -->
-    <form id="storyUploadForm" method="post" action="{% url 'create_story' %}" enctype="multipart/form-data" style="display: none;">
-        {% csrf_token %}
-        <input type="file" name="image" id="storyFileInput" accept="image/*" onchange="this.form.submit()">
-        <textarea name="text" style="display: none;">📸 استوری جدید</textarea>
-    </form>
-</div>
-        
-        <!-- استوری‌های کاربران دیگر -->
-        <div id="stories-list" style="display: inline-flex; gap: 16px;"></div>
-        
-    </div>
-</div>
-</div>
+<div style="display:flex; gap:20px; align-items:flex-start;">
+  <div style="flex:3; min-width:0;">
 
-<!-- مودال نمایش استوری -->
-<div id="storyModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999;">
-    <div style="position: relative; top: 50%; transform: translateY(-50%); margin: 0 auto; max-width: 500px; background: #1a1a1a; border-radius: 16px;">
-        <div style="position: relative; padding: 20px; color: white;">
-            <button onclick="closeStoryModal()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; font-size: 24px; cursor: pointer;">✖</button>
-            
-            <!-- دکمه حذف استوری (فقط برای استوری خود کاربر) -->
-            <button id="deleteStoryBtn" onclick="deleteCurrentStory()" style="position: absolute; bottom: 10px; left: 10px; background: #dc3545; border: none; color: white; padding: 5px 10px; border-radius: 8px; cursor: pointer; display: none;">
-                🗑️ حذف استوری
-            </button>
-            
-            <div id="storyCarouselInner" style="text-align: center;"></div>
-            <div style="display: flex; justify-content: space-between; margin-top: 20px;">
-                <button onclick="prevStory()" style="background: rgba(0,0,0,0.5); border: none; color: white; padding: 10px 20px; cursor: pointer;">◀ قبلی</button>
-                <button onclick="nextStory()" style="background: rgba(0,0,0,0.5); border: none; color: white; padding: 10px 20px; cursor: pointer;">بعدی ▶</button>
-            </div>
+    <!-- ── استوری‌ها ── -->
+    <div class="st-bar" dir="rtl">
+      <div class="st-item" id="my-story" onclick="document.getElementById('storyFileInput').click()">
+        <div class="st-ring st-ring-add" id="myStoryRing">
+          <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}/media/profiles/default.png{% endif %}" alt="avatar" class="st-avatar">
+          <span class="st-add-dot">+</span>
         </div>
+        <span class="st-label">استوری</span>
+      </div>
+      <div id="stories-list" class="st-list"></div>
     </div>
-</div>
-<div class="create-post-card">
 
-    <img
-        src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}/media/profiles/default.png{% endif %}"
-        class="post-avatar"
-    >
+    <!-- ── مودال استوری — وسط صفحه با flex ── -->
+    <div id="storyModal" class="stm-backdrop" style="display:none" onclick="if(event.target===this)closeStoryModal()">
+      <div class="stm-card">
+        <div class="stm-progress" id="stmProgress"></div>
+        <div class="stm-header">
+          <div class="stm-user">
+            <div class="stm-user-avatar" id="stmAvatar"></div>
+            <span class="stm-user-name" id="stmUsername"></span>
+          </div>
+          <button class="stm-close" onclick="closeStoryModal()">✕</button>
+        </div>
+        <div class="stm-body" id="storyCarouselInner"></div>
+        <div class="stm-footer">
+          <button id="deleteStoryBtn" type="submit" class="stm-delete-btn" onclick="deleteCurrentStory()" style="display:none">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          <path d="M10 11v6"/>
+          <path d="M14 11v6"/>
+          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+        </svg>
+      </button>
+          <div class="stm-nav">
+            <button class="stm-add-btn"
+                  onclick="document.getElementById('storyFileInput').click()"
+                  title="افزودن استوری">
+              <img src="{% static 'icons/plus.svg' %}" alt="Add">
+          </button>
+            <button class="stm-nav-btn" onclick="prevStory()">&#8592; قبلی</button>
+            <button class="stm-nav-btn" onclick="nextStory()">بعدی &#8594;</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <a href="{% url 'create_post' %}" class="create-post-btn">
+    <!-- اینپوت مخفی برای انتخاب فایل استوری جدید -->
+    <input type="file" id="storyFileInput" accept="image/*" style="display:none" onchange="uploadNewStory(event)">
+
+    <!-- ── کارت ایجاد پست — زیر استوری‌ها ── -->
+    <div class="create-post-card" style="margin-bottom:16px;">
+      <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}/media/profiles/default.png{% endif %}" class="post-avatar">
+      <a href="{% url 'create_post' %}" class="create-post-btn">
         امروز چه چیزی می‌خواهی به اشتراک بگذاری؟
-    </a>
-
-</div>
-
-<!-- پست‌ها -->
- <div class="posts-grid">
-{% for post in posts %}
-<div class="post-card">
-
-    <div class="post-header-mini">
-
-    <img src="{% if post.author.profile_picture %}{{ post.author.profile_picture.url }}{% else %}/media/profiles/default.png{% endif %}"
-         class="post-avatar-mini">
-
-    <div class="post-user-info">
-        <div class="post-author-mini">
-            {{ post.author.username }}
-        </div>
-
-        <div class="post-time-mini">
-            {{ post.created_at|timesince }} قبل
-        </div>
+      </a>
     </div>
-    <div class="post-menu-wrapper">
-        <button class="post-menu-btn" onclick="toggleMenu(this)">⋯</button>
 
-        <div class="post-menu">
-            <a href="{% url 'save_post' post.id %}">🔖 ذخیره</a>
-
+    <!-- ── پست‌ها ── -->
+    <div class="posts-grid">
+    {% for post in posts %}
+    <div class="post-card">
+        <div class="post-header-mini">
+          <img src="{% if post.author.profile_picture %}{{ post.author.profile_picture.url }}{% else %}/media/profiles/default.png{% endif %}" class="post-avatar-mini">
+          <div class="post-user-info">
+            <div class="post-author-mini">{{ post.author.username }}</div>
+            <div class="post-time-mini">{{ post.created_at|timesince }} قبل</div>
+          </div>
+          <div class="post-menu-wrapper">
             {% if request.user == post.author %}
-                <a href="{% url 'edit_post' post.id %}">✏️ ویرایش</a>
-                <a href="{% url 'delete_post' post.id %}">🗑️ حذف</a>
+            <button class="post-menu-btn"
+                data-edit="{% url 'edit_post' post.id %}"
+                data-delete="{% url 'delete_post' post.id %}"
+                onclick="event.stopPropagation(); openPostMenu(this)">⋯</button>
             {% endif %}
+          </div>
         </div>
-    </div>
-
-</div>
-    <a href="{% url 'post_detail' post.id %}" class="post-link">
-     <!-- نمایش عکس (اصلی) -->
-    {% if post.image %}
-    <div class="mt-2">
-       <img src="{{ post.image.url }}"
-     alt="پست تصویری"
-     class="post-image">
-    </div>
-    {% endif %}
-    
-    <!-- نمایش کپشن (متن) زیر عکس -->
-    {% if post.content %}
-    <div class="post-content mt-3">
-        {{ post.content }}
-    </div>
-    {% endif %}
-</a>
-    <div class="post-actions">
-        <a href="{% url 'like_post' post.id %}" class="d-inline-flex align-items-center gap-1">
-            <img src="{% static 'icons/heart.svg' %}" alt="لایک" class="icon-sm"> ❤️ {{ post.likes.count }}  
+        <a href="{% url 'post_detail' post.id %}" class="post-link">
+          {% with first_media=post.media.first %}
+            {% if first_media %}
+              {% if first_media.media_type == 'image' %}
+                <img src="{{ first_media.file.url }}" class="post-image">
+              {% elif first_media.media_type == 'video' %}
+                <video class="post-image" controls><source src="{{ first_media.file.url }}"></video>
+              {% endif %}
+            {% elif post.image %}
+              <img src="{{ post.image.url }}" class="post-image">
+            {% endif %}
+          {% endwith %}
+          {% if post.content %}
+          <div class="post-content mt-3">{{ post.content }}</div>
+          {% endif %}
         </a>
-        <a href="#comment-{{ post.id }}" class="d-inline-flex align-items-center gap-1">
+        <div class="post-actions">
+          <a href="{% url 'like_post' post.id %}" class="d-inline-flex align-items-center gap-1">
+            <img src="{% static 'icons/heart.svg' %}" alt="لایک" class="icon-sm"> ❤️ {{ post.likes.count }}
+          </a>
+          <button type="button" class="comments-toggle-btn" onclick="openCommentsModal('{{ post.id }}')">
             <img src="{% static 'icons/message.svg' %}" alt="کامنت" class="icon-sm"> 💬 {{ post.comments.count }}
+          </button>
+        </div>
+        {% if request.user != post.author %}
+        <a href="{% url 'save_post' post.id %}" class="save-btn">
+          <span class="stat-icon"><img src="{% static 'icons/mdi--bookmark.svg' %}" alt="save"></span>
         </a>
-        
-    </div>
+      {% endif %}
 
-    {% if request.user != post.author %}
-        <a href="{% url 'save_post' post.id %}">
-        🔖
-    </a>
-    {% endif %}
-
-
-    <!-- کامنت‌ها -->
-    <div class="mt-3">
-        {% for comment in post.comments.all|slice:":3" %}
-      <div class="comment-item">
-
-    <div class="comment-top">
-        <span class="comment-user">
-            {{ comment.user.username }}
-        </span>
-
+<!-- محتوای کامنت‌ها فقط توی DOM هست، نمایش داده نمیشه تا وقتی مودال بازش کنه -->
+<template id="comments-template-{{ post.id }}">
+  <div class="modal-comments-list">
+    {% for comment in post.comments.all %}
+    <div class="comment-item">
+      <div class="comment-top">
+        <span class="comment-user">{{ comment.user.username }}</span>
         {% if request.user == comment.user or request.user.is_superuser %}
-        {% for comment in post.comments.all %}
-   <a href="#" class="delete-comment" onclick="deleteComment('{{ comment.id }}', this); return false;">
-    حذف
-</a>
-        {% endfor %}
+        <a href="#" class="delete-comment" onclick="deleteComment('{{ comment.id }}', this); return false;">حذف</a>
         {% endif %}
+      </div>
+      <div class="comment-text">{{ comment.text }}</div>
     </div>
-
-    <div class="comment-text">
-        {{ comment.text }}
-    </div>
-
-</div>
-        {% endfor %}
-        <form method="post"
-      action="{% url 'add_comment' post.id %}"
-      class="comment-form">
-
+    {% empty %}
+    <p class="no-comments-text">هنوز کامنتی ثبت نشده. اولین نفر باش!</p>
+    {% endfor %}
+  </div>
+  <form method="post" action="{% url 'add_comment' post.id %}" class="comment-form modal-comment-form">
     {% csrf_token %}
-
-    <input type="text"
-           name="text"
-           placeholder="نظر خودت رو بنویس...">
-
-    <button type="submit">
-        ارسال
-    </button>
-
-</form>
+    <input type="text" name="text" placeholder="نظر خودت رو بنویس...">
+    <button type="submit">ارسال</button>
+  </form>
+</template>
     </div>
+    {% empty %}{% endfor %}
+    </div>
+    
+  </div>
+  <!-- ── مودال کامنت‌ها ── -->
+<div id="commentsModal" class="cm-backdrop" style="display:none" onclick="if(event.target===this) closeCommentsModal()">
+  <div class="cm-card">
+    <div class="cm-header">
+      <span class="cm-title">کامنت‌ها</span>
+      <button class="cm-close" onclick="closeCommentsModal()">✕</button>
+    </div>
+    <div class="cm-body" id="commentsModalBody"></div>
+  </div>
 </div>
-{% empty %}
+  <!-- ── ستون راست ── -->
+  <div style="flex:1; max-width:300px; position: sticky; top: 20px;">
+        <!-- ── سرچ‌باکس کاربران ── -->
+    <div class="user-search-wrap" dir="rtl">
+      <div class="user-search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="user-search-icon">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" id="userSearchInput" placeholder="جستجوی کاربر با نام کاربری..." autocomplete="off">
+      </div>
+      <div id="userSearchResults" class="user-search-results"></div>
+    </div>
+    <div style="background:#fff;border:1px solid rgba(0,0,0,.06);border-top:3px solid #f5b400;border-radius:14px;padding:16px;margin-top:16px;">
+      <h5 style="font-size:14px;font-weight:700;color:#122248;margin-bottom:12px;">🏆 برترین‌ها</h5>
+      {% for u in top_users %}
+      <a href="{% url 'profile_view' u.username %}" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;margin-bottom:10px;">
+        <span style="width:20px;text-align:center;font-size:13px;font-weight:700;color:#6b7280;">
+          {% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}{{ forloop.counter }}{% endif %}
+        </span>
+        <div style="width:30px;height:30px;border-radius:50%;background:#eef2fa;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#1d3b7a;overflow:hidden;flex-shrink:0;">
+          {% if u.profile_picture %}<img src="{{ u.profile_picture.url }}" style="width:100%;height:100%;object-fit:cover;">
+          {% else %}{{ u.username|first|upper }}{% endif %}
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:600;color:#122248;">{{ u.username }}</div>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:#6b7280;">{{ u.xp }}</div>
+      </a>
+      {% endfor %}
+      <a href="{% url 'leaderboard' %}" style="display:block;text-align:center;margin-top:8px;font-size:12px;color:black;text-decoration:none;">مشاهده کامل بورد →</a>
+    </div>
 
-{% endfor %}
-
+    <div style="background:#fff;border:1px solid rgba(0,0,0,.06);border-top:3px solid #f5b400;border-radius:14px;padding:16px;margin-top:16px;">
+      <h5 style="font-size:14px;font-weight:700;color:#122248;margin-bottom:12px;">پیشنهاد برای دنبال کردن</h5>
+      {% for u in suggestions %}
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <a href="{% url 'profile_view' u.username %}" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;text-decoration:none;color:inherit;">
+          <div style="width:32px;height:32px;border-radius:50%; border-top:3px solid #122248;background:#eef2fa;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#1d3b7a;flex-shrink:0;overflow:hidden;">
+            {% if u.profile_picture %}<img src="{{ u.profile_picture.url }}" style="width:100%;height:100%;object-fit:cover;">
+            {% else %}{{ u.username|first|upper }}{% endif %}
+          </div>
+          <div style="font-size:13px;font-weight:600;color:#122248;">{{ u.username }}</div>
+        </a>
+        <a href="{% url 'follow_user' u.username %}" style="font-size:12px;background:#122248;color:#fff;border:none;border-radius:99px;padding:5px 14px;text-decoration:none;">دنبال کردن</a>
+      </div>
+      {% empty %}
+      <p style="font-size:13px;color:black;">فعلاً پیشنهادی نیست</p>
+      {% endfor %}
+    </div>
+  </div>
 </div>
+
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log("دستي صدا زدن loadStories");
-        loadStories();
-    });
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("دستي صدا زدن loadStories");
+    loadStories();
+});
+
+var msnry;
+
+function initMasonry() {
     var grid = document.querySelector('.posts-grid');
-imagesLoaded(grid, function() {
-    new Masonry(grid, {
+    if (!grid) return;
+    msnry = new Masonry(grid, {
         itemSelector: '.post-card',
         columnWidth: '.post-card',
         gutter: 16,
         isOriginLeft: false
     });
+    var imgLoad = imagesLoaded(grid);
+    imgLoad.on('progress', function() { msnry.layout(); });
+    new ResizeObserver(function() { msnry.layout(); }).observe(grid);
+}
+
+function openPostMenu(btn) {
+    const dropdown = document.getElementById('postDropdown');
+    const rect = btn.getBoundingClientRect();
+    if (dropdown.classList.contains('open') && dropdown._lastBtn === btn) {
+        dropdown.classList.remove('open');
+        dropdown._lastBtn = null;
+        return;
+    }
+    document.getElementById('dropdownEdit').href = btn.dataset.edit;
+    document.getElementById('dropdownDelete').href = btn.dataset.delete;
+    dropdown.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+    dropdown.style.left = (rect.left + window.scrollX - dropdown.offsetWidth + rect.width) + 'px';
+    dropdown.classList.add('open');
+    dropdown._lastBtn = btn;
+}
+document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('postDropdown');
+    if (!dropdown.contains(e.target) && !e.target.classList.contains('post-menu-btn')) {
+        dropdown.classList.remove('open');
+    }
 });
 
+window.addEventListener('load', function() { initMasonry(); setTimeout(initMasonry, 300); });
+window.addEventListener('pageshow', function(e) { if (e.persisted) initMasonry(); });
+
+const profileUrlTemplate = "{% url 'profile_view' 'USERNAME_PLACEHOLDER' %}";
+
+(function() {
+    const input = document.getElementById('userSearchInput');
+    const resultsBox = document.getElementById('userSearchResults');
+    let debounceTimer = null;
+
+    input.addEventListener('input', function() {
+        const query = this.value.trim();
+        clearTimeout(debounceTimer);
+
+        if (query.length < 2) {
+            resultsBox.classList.remove('open');
+            resultsBox.innerHTML = '';
+            return;
+        }
+
+        debounceTimer = setTimeout(function() {
+            fetch(`{% url 'search_users' %}?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    resultsBox.innerHTML = '';
+                    if (!data.results.length) {
+                        resultsBox.innerHTML = '<div class="usr-empty">کاربری پیدا نشد</div>';
+                        resultsBox.classList.add('open');
+                        return;
+                    }
+                    data.results.forEach(u => {
+                        const a = document.createElement('a');
+                        a.href = profileUrlTemplate.replace('USERNAME_PLACEHOLDER', u.username);
+                        a.className = 'usr-item';
+                        a.innerHTML = `
+                            <div class="usr-avatar">
+                                ${u.avatar_url ? `<img src="${u.avatar_url}">` : u.username.charAt(0).toUpperCase()}
+                            </div>
+                            <div class="usr-info">
+                                <div class="usr-username">${u.username}</div>
+                                ${u.full_name ? `<div class="usr-fullname">${u.full_name}</div>` : ''}
+                            </div>
+                        `;
+                        resultsBox.appendChild(a);
+                    });
+                    resultsBox.classList.add('open');
+                });
+        }, 300);
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!resultsBox.contains(e.target) && e.target !== input) {
+            resultsBox.classList.remove('open');
+        }
+    });
+})();
+
+function openCommentsModal(postId) {
+    const template = document.getElementById('comments-template-' + postId);
+    const modalBody = document.getElementById('commentsModalBody');
+    if (!template) return;
+    modalBody.innerHTML = '';
+    modalBody.appendChild(template.content.cloneNode(true));
+    document.getElementById('commentsModal').style.display = 'flex';
+}
+
+function closeCommentsModal() {
+    document.getElementById('commentsModal').style.display = 'none';
+}
+
 </script>
+
+<div id="postDropdown" class="post-dropdown">
+    <a id="dropdownEdit" href="create_post.html">✏️ ویرایش پست</a>
+    <a id="dropdownDelete" href="#" class="danger">🗑️ حذف پست</a>
+</div>
+
 {% endblock %}

@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from social.views import timeline
 
 urlpatterns = [
     path('register/', views.register, name='register'),
@@ -9,5 +10,8 @@ urlpatterns = [
     path('profile/', views.profile_view, name='my_profile'),
     path('edit/', views.edit_profile, name='edit_profile'),
     path('follow/<str:username>/', views.follow_user, name='follow_user'),
-path('unfollow/<str:username>/', views.unfollow_user, name='unfollow_user'),
+    path('unfollow/<str:username>/', views.unfollow_user, name='unfollow_user'),
+    path('forgot-password/', views.forgot_password, name='forgot_password'),
+    path('reset/<uidb64>/<token>/', views.reset_password, name='reset_password'),
+    path('leaderboard/', views.leaderboard, name='leaderboard'),
 ]

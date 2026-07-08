@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}سوالات درسی{% endblock %}
+
+{% block content %}
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+.qa-wrap{direction:rtl;max-width:700px;margin:0 auto;padding:1.5rem 1rem;}
+.qa-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;}
+.qa-title{font-size:20px;font-weight:600;color:#122248;}
+.qa-ask-btn{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:linear-gradient(135deg,#122248,#1d3b7a);
+    color:#fff;
+    text-decoration:none;
+    border-radius:10px;
+    padding:10px 18px;
+    font-size:14px;
+    font-weight:600;
+    transition:transform .2s, box-shadow .2s;
+}
+.qa-ask-btn:hover{
+    transform:translateY(-3px);
+    box-shadow:0 6px 16px rgba(0,0,0,0.1);
+}
+.qa-card{background:#fff;border:1px solid #eee;border-radius:14px;padding:18px;margin-bottom:12px;text-decoration:none;display:block;transition:border-color .15s, box-shadow .15s;color:inherit;box-shadow:0 2px 10px rgba(0,0,0,0.04);}
+.qa-card:hover{border-color:#c5d3ec;}
+
+/* سوال‌های بی‌پاسخ یک نشانگر زرد کنارشون می‌گیرن تا توی لیست زود پیدا بشن */
+.qa-card.qa-card-unanswered{
+    box-shadow: inset 3px 0 0 #f5b400, 0 2px 10px rgba(0,0,0,0.04);
+}
+
+.qa-q-title{font-size:16px;font-weight:600;color:#122248;margin-bottom:6px;}
+.qa-q-body{font-size:13px;color:#6b7280;line-height:1.6;margin-bottom:10px;}
+.qa-meta-row{display:flex;align-items:center;gap:12px;font-size:12px;color:#9ca3af;flex-wrap:wrap;}
+
+/* تگ درس رنگ زرد کم‌رنگ گرفت تا از بقیه‌ی متادیتا جدا و قابل‌اسکن‌تر باشه */
+.qa-tag{background:#fff3d6;padding:3px 10px;border-radius:99px;font-size:11px;color:#8a5b00;border:1px solid #ffe19a;}
+
+.qa-answers-count{display:flex;align-items:center;gap:4px;}
+.qa-answers-count.has-accepted{color:#16a34a;}
+.qa-empty{text-align:center;color:#9ca3af;font-size:14px;padding:40px 0;}
+.search-row{display:flex;gap:8px;margin-bottom:12px;}
+.search-input{flex:1;background:#f7f9ff;border:1px solid #dce4f3;border-radius:10px;padding:10px 14px;font-size:14px;color:#122248;outline:none;font-family:inherit;}
+.search-input:focus{border-color:#2b5cd9;background:#fff;}
+.search-btn{background:#142855;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:13px;cursor:pointer;transition:background .2s;}
+.search-btn:hover{background:#1d3b7a;}
+.filter-row{display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap;}
+.filter-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    padding:6px 14px;
+    border-radius:99px;
+    border:1px solid #e5e7eb;
+    background:#fff;
+    color:#6b7280;
+    cursor:pointer;
+    text-decoration:none;
+}
+
+/* روی چیپ فعال، یه نقطه‌ی زرد کوچیک هم‌خونه با خط زیر آیکون فعال توی ساید‌بار */
+.filter-chip.active{background:linear-gradient(135deg,#122248,#1d3b7a);color:#fff;border-color:#122248;}
+.filter-chip.active::before{
+    content:"";
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:#f5b400;
+    flex-shrink:0;
+}
+
+</style>
+
+<div class="qa-wrap">
+  <div class="qa-header">
+    <div class="qa-title">سوالات درسی</div>
+    <a href="{% url 'ask_question' %}" class="qa-ask-btn">
+      <i class="ti ti-plus"></i> پرسیدن سوال
+    </a>
+  </div>
+    <form method="get" class="search-row">
+      <input type="text" name="q" class="search-input" placeholder="جستجو در سوالات..." value="{{ search_query }}">
+      <button type="submit" class="search-btn">جستجو</button>
+    </form>
+
+    <div class="filter-row">
+      <a href="{% url 'question_list' %}?q={{ search_query }}" class="filter-chip {% if not selected_status %}active{% endif %}">همه</a>
+      <a href="{% url 'question_list' %}?q={{ search_query }}&status=answered" class="filter-chip {% if selected_status == 'answered' %}active{% endif %}">پاسخ‌داده‌شده</a>
+      <a href="{% url 'question_list' %}?q={{ search_query }}&status=unanswered" class="filter-chip {% if selected_status == 'unanswered' %}active{% endif %}">بی‌پاسخ</a>
+      {% for lesson in lessons %}
+      <a href="{% url 'question_list' %}?q={{ search_query }}&lesson={{ lesson }}" class="filter-chip {% if selected_lesson == lesson %}active{% endif %}">{{ lesson }}</a>
+      {% endfor %}
+    </div>
+  {% for question in questions %}
+  <a href="{% url 'question_detail' question.id %}" class="qa-card{% if question.answers.count == 0 %} qa-card-unanswered{% endif %}">
+    <div class="qa-q-title">{{ question.title }}</div>
+    <div class="qa-q-body">{{ question.body|truncatechars:120 }}</div>
+    <div class="qa-meta-row">
+      {% if question.lesson_name %}
+      <span class="qa-tag">{{ question.lesson_name }}</span>
+      {% endif %}
+      <span class="qa-answers-count {% if question.answers.all|length > 0 %}{% for a in question.answers.all %}{% if a.is_accepted %}has-accepted{% endif %}{% endfor %}{% endif %}">
+        <i class="ti ti-message-circle"></i> {{ question.answers.count }} پاسخ
+      </span>
+      <span>{{ question.created_at|timesince }} پیش</span>
+    </div>
+  </a>
+  {% empty %}
+  <div class="qa-empty">هنوز سوالی پرسیده نشده — اولین نفر باش!</div>
+  {% endfor %}
+</div>
+{% endblock %}

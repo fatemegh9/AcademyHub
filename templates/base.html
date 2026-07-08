@@ -39,22 +39,16 @@
 
 <!-- سایدبار -->
 <div class="sidebar" id="sidebar">
-    <button class="toggle-btn" onclick="toggleSidebar()">
-        <img src="{% static 'icons/chevron-left.svg' %}" alt="بستن" class="icon">
-    </button>
 
-    <div class="sidebar-header">
-        <h3>🎓 آکادمی هاب</h3>
+
+   <div class="sidebar-header">
+        <img src="{% static 'images/new22.png' %}" style="width: 55px; height: 55px; object-fit:fill;">
     </div>
 
     {% if user.is_authenticated %}
     <div class="sidebar-user">
         {% load static %}
-<img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}/media/profiles/default.png{% endif %}" alt="avatar" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover;">
-        <div class="sidebar-user-info">
-            <div class="name">{{ user.get_full_name|default:user.username }}</div>
-            <div class="username">@{{ user.username }}</div>
-        </div>
+            <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}/media/profiles/default.png{% endif %}" alt="avatar">
     </div>
     {% endif %}
 
@@ -64,14 +58,20 @@
         <li><a href="{% url 'saved_notes' %}" data-title="ذخیره شده‌ها"><img src="{% static 'icons/star.svg' %}" alt="ذخیره شده‌ها" class="icon"> <span>ذخیره شده‌ها</span></a></li>
         <li><a href="{% url 'notifications' %}" data-title="اعلان‌ها"><img src="{% static 'icons/bell.svg' %}" alt="اعلان‌ها" class="icon"> <span>اعلان‌ها</span>{% if user.notifications.filter.is_read.count > 0 %}<span class="badge bg-danger rounded-pill ms-auto">{{ user.notifications.filter.is_read.count }}</span>{% endif %}</a></li>
         <li><a href="{% url 'my_profile' %}" data-title="پروفایل من"><img src="{% static 'icons/user.svg' %}" alt="اعلان‌ها" class="icon"> <span>پروفایل من</span></a></li>
-        
+        <li><a href="{% url 'question_list' %}" data-title="سوالات درسی"><img src="{% static 'icons/question.svg' %}" alt="سوالات درسی" class="icon"> <span>سوالات درسی</span></a></li>
+        <li><a href="{% url 'inbox' %}" data-title="پیام‌ها"><img src="{% static 'icons/uil--message.svg' %}" alt="پیام‌ها" class="icon"> <span>پیام‌ها</span></a></li>
         
     </ul>
 
     {% if user.is_authenticated %}
     <hr>
     <ul class="sidebar-menu">
-        <li><a href="{% url 'logout' %}" data-title="خروج"><img src="{% static 'icons/logout.svg' %}" alt="خروج" class="icon"> <span>خروج</span></a></li>
+        <li>
+        <button type="button" onclick="openLogoutModal()" data-title="خروج" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.75rem;padding:0.7rem 1rem;color:#e0e0e0;width:100%;font:inherit;border-radius:10px;transition:all 0.3s;">
+            <img src="{% static 'icons/logout.svg' %}" alt="خروج" class="icon">
+            <span>خروج</span>
+        </button>
+        </li>
     </ul>
     {% else %}
     <ul class="sidebar-menu">
@@ -83,15 +83,33 @@
 
 <!-- محتوای اصلی -->
 <div class="main-content">
+
     {% if messages %}
+    <div class="toast-container">
         {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                {{ message }}
-                <button type="button" class="btn-close" onclick="this.parentElement.remove()">✖</button>
+            <div class="custom-toast {{ message.tags }}">
+                <span class="toast-icon">
+                    {% if message.tags == 'success' %}
+                        ✓
+                    {% elif message.tags == 'error' %}
+                        ✕
+                    {% elif message.tags == 'warning' %}
+                        ⚠
+                    {% else %}
+                        ℹ
+                    {% endif %}
+                </span>
+
+                <span class="toast-text">{{ message }}</span>
+
+                <button class="toast-close" onclick="this.parentElement.remove()">
+                    &times;
+                </button>
             </div>
         {% endfor %}
+    </div>
     {% endif %}
-    
+
     {% block content %}{% endblock %}
 </div>
 
@@ -105,4 +123,153 @@
 
 {% block extra_js %}{% endblock %}
 </body>
+
+<div id="logoutModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:18px; padding:1.75rem; max-width:300px; width:90%; direction:rtl; text-align:center;">
+        <div style="width:48px; height:48px; border-radius:50%; background:#fef2f2; display:flex; align-items:center; justify-content:center; margin:0 auto 14px;">
+            <i class="fa-solid fa-arrow-right-from-bracket" style="font-size:20px; color:#dc2626;"></i>
+        </div>
+        <div style="font-size:16px; font-weight:700; color:#122248; margin-bottom:6px;">خروج از حساب کاربری</div>
+        <div style="font-size:13px; color:#6b7280; margin-bottom:20px;">آیا مطمئنی می‌خوای از حسابت خارج شی؟</div>
+        <div style="display:flex; gap:8px;">
+            <button onclick="closeLogoutModal()" style="flex:1; background:#f3f4f6; border:none; border-radius:10px; padding:11px; font-size:13px; cursor:pointer; color:#374151;">انصراف</button>
+            <form method="post" action="{% url 'logout' %}" style="flex:1; margin:0;">
+                {% csrf_token %}
+                <button type="submit" style="width:100%; background:#e70505; color:#fff; border:none; border-radius:10px; padding:11px; font-size:13px; cursor:pointer;">خروج</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="confirmModal" style="display:none;position:fixed;inset:0;background:rgba(17,24,39,.45);z-index:99999;align-items:center;justify-content:center;">
+
+    <div style="
+        width:92%;
+        max-width:360px;
+        background:#fff;
+        border-radius:18px;
+        padding:22px;
+        text-align:center;
+        animation:modalPop .18s ease;
+    ">
+
+        <div id="confirmIcon"
+             style="
+                width:58px;
+                height:58px;
+                margin:0 auto 15px;
+                border-radius:50%;
+                background:#fef2f2;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                color:#dc2626;
+                font-size:24px;
+             ">
+            🗑️
+        </div>
+
+        <div id="confirmTitle"
+             style="font-size:18px;font-weight:700;color:#122248;">
+            حذف
+        </div>
+
+        <div id="confirmText"
+             style="margin-top:8px;font-size:14px;color:#6b7280;line-height:1.8;">
+            آیا مطمئن هستید؟
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:22px;">
+
+            <button
+                onclick="closeConfirmModal()"
+                style="
+                    flex:1;
+                    height:42px;
+                    border:none;
+                    background:#eef2fa;
+                    color:#122248;
+                    border-radius:12px;
+                    cursor:pointer;
+                    font-size:14px;
+                ">
+                انصراف
+            </button>
+
+            <button
+                id="confirmAction"
+                style="
+                    flex:1;
+                    height:42px;
+                    border:none;
+                    background:#dc2626;
+                    color:white;
+                    border-radius:12px;
+                    cursor:pointer;
+                    font-size:14px;
+                ">
+                حذف
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+function openLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'flex';
+}
+function closeLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'none';
+}
+
+const currentPath = window.location.pathname;
+document.querySelectorAll('.sidebar-menu a').forEach(link => {
+    if (link.getAttribute('href') === currentPath) {
+        link.classList.add('active');
+    }
+});
+setTimeout(function () {
+    document.querySelectorAll(".custom-toast").forEach(function (toast) {
+        toast.style.transition = "0.4s";
+        toast.style.opacity = "0";
+        toast.style.transform = "translateX(40px)";
+
+        setTimeout(function () {
+            toast.remove();
+        }, 400);
+    });
+}, 3000);
+
+let confirmForm = null;
+
+function openConfirmModal(form,title,text){
+
+    confirmForm=form;
+
+    document.getElementById("confirmTitle").innerText=title;
+    document.getElementById("confirmText").innerText=text;
+
+    document.getElementById("confirmModal").style.display="flex";
+
+}
+
+function closeConfirmModal(){
+
+    document.getElementById("confirmModal").style.display="none";
+
+}
+
+document.getElementById("confirmAction").onclick=function(){
+
+    if(confirmForm){
+        confirmForm.submit();
+    }
+
+};
+
+</script>
+
 </html>

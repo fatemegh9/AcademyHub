@@ -1,111 +1,114 @@
 <style>
-.detail-wrapper{
-    display:flex;
-    gap:20px;
-    align-items:flex-start;
-    margin-top:20px;
+*{box-sizing:border-box;margin:0;padding:0;}
+.page{display:flex;gap:24px;align-items:flex-start;direction:rtl;margin-top:20px;}
+
+.main-col{flex:0 0 380px; margin-right: 10px;}
+.main-frame{background:#fff;border-radius:18px;border:1px solid #eee;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06);}
+.post-thumb img{width:100%;display:block;object-fit:cover;}
+.post-body{padding:16px;}
+.author-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.avatar{width:36px;height:36px;border-radius:50%;background:#eef2fa;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:#1d3b7a;flex-shrink:0;overflow:hidden;}
+.avatar img{width:100%;height:100%;object-fit:cover;}
+.author-name{font-size:13px;font-weight:500;color:#122248;}
+.author-time{font-size:11px;color:#9ca3af;margin-top:1px;}
+.caption{font-size:14px;color:#1f2937;line-height:1.7;margin-bottom:12px;}
+.tags-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;}
+.tag{font-size:11px;padding:3px 10px;border-radius:99px;background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;}
+.divider{height:1px;background:#f3f4f6;margin-bottom:12px;}
+.actions-row{display:flex;gap:14px;}
+.action-btn{display:flex;align-items:center;gap:4px;font-size:12px;color:#6b7280;text-decoration:none;}
+
+.related-col{flex:1;min-width:0;margin-left: 10px;}
+.related-frame{background:#fff;border-radius:18px;border:4px solid #eee;box-shadow:0 2px 16px rgba(0,0,0,0.06);padding:18px;}
+.related-header{font-size:12px;color:#9ca3af;margin-bottom:14px;letter-spacing:0.04em;}
+.masonry{columns:3;column-gap:15px;}
+.mini-card{break-inside:avoid;margin-bottom:18px;border-radius:14px;border:1px solid #eee;background:#fff;overflow:hidden;cursor:pointer;transition:border-color .15s;text-decoration:none;display:block;}
+.mini-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 6px 16px rgba(0,0,0,0.1);
+  border-color:#d1d5db;
 }
-
-/* کارت اصلی کوچیک‌تر */
-.main-post{
-    flex:0 0 520px;
-    max-width:520px;   /* 👈 محدود کردن عرض */
-    background:#fff;
-    border-radius:16px;
-    padding:12px;
-    box-shadow:0 6px 18px rgba(0,0,0,.08);
-}
-
-/* wrapper تصویر (کوچیک‌تر شد) */
-.img-wrapper{
-    position:relative;
-    width:100%;
-    height:320px;   /* 👈 قبلاً 420 بود */
-    overflow:hidden;
-    border-radius:14px;
-    margin-bottom:12px;
-}
-
-/* بک‌گراند blur */
-.img-wrapper::before{
-    content:"";
-    position:absolute;
-    inset:0;
-
-    background:url('{{ post.image.url }}') center/cover;
-    filter:blur(18px);
-    transform:scale(1.2);
-    opacity:0.55;
-}
-
-/* تصویر اصلی */
-.main-img{
-    position:relative;
-    width:100%;
-    height:100%;
-    object-fit:contain;  /* بدون کراپ */
-    display:block;
-    margin:auto;
-}
-
-/* کپشن فشرده‌تر */
-.post-text{
-    font-size:14px;
-    line-height:1.6;
-    color:#374151;
-
-    background:#f9fafb;
-    padding:10px;
-    border-radius:10px;
-
-    border:1px solid #eee;
-}
-
-/* related هم جمع‌وجورتر */
-.related{
-    flex:1;
-    max-width:350px;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-}
-
-/* mini card کوچیک‌تر */
-.mini-card img{
-    width:100%;
-    height:90px;
-    object-fit:cover;
-    border-radius:10px;
-}
-
+.mini-card img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;}
+.mini-body{padding:10px 12px 12px;}
+.mini-author-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.mini-avatar{width:18px;height:18px;border-radius:50%;background:#eef2fa;display:flex;align-items:center;justify-content:center;font-size:9px;color:#1d3b7a;flex-shrink:0;overflow:hidden;}
+.mini-avatar img{width:100%;height:100%;object-fit:cover;}
+.mini-author{font-size:13px;color:#6b7280;}
+.mini-text{font-size:14px;color:#1f2937;line-height:1.5;}
 </style>
 
-<div class="detail-wrapper">
-
-    <!-- پست اصلی -->
-    <div class="main-post">
-
-        {% if post.image %}
-        <div class="img-wrapper">
-            <img src="{{ post.image.url }}" class="main-img">
+<div class="page">
+  <div class="main-col">
+    <div class="main-frame">
+      {% with first_media=post.media.first %}
+      {% if first_media %}
+      <div class="post-thumb"><img src="{{ first_media.file.url }}"></div>
+      {% elif post.image %}
+      <div class="post-thumb"><img src="{{ post.image.url }}"></div>
+      {% endif %}
+      {% endwith %}
+      <div class="post-body">
+        <div class="author-row">
+          <div class="avatar">
+            {% if post.author.profile_picture %}
+            <img src="{{ post.author.profile_picture.url }}">
+            {% else %}
+            {{ post.author.username|first|upper }}
+            {% endif %}
+          </div>
+          <div>
+            <div class="author-name">{{ post.author.username }}</div>
+            <div class="author-time">{{ post.created_at|timesince }} پیش</div>
+          </div>
+        </div>
+        <div class="caption">{{ post.content }}</div>
+        {% if post.tags.all %}
+        <div class="tags-row">
+          {% for tag in post.tags.all %}
+          <span class="tag">{{ tag.name }}</span>
+          {% endfor %}
         </div>
         {% endif %}
-
-        <div class="post-text">
-            {{ post.content }}
+        <div class="divider"></div>
+        <div class="actions-row">
+          <a href="{% url 'like_post' post.id %}" class="action-btn">❤️ {{ post.likes.count }}</a>
+          <span class="action-btn">💬 {{ post.comments.count }}</span>
         </div>
-
+      </div>
     </div>
+  </div>
 
-    <!-- مرتبط‌ها -->
-    <div class="related">
-        <h4 style="margin-bottom:10px;">پست‌های مرتبط</h4>
-
+  <div class="related-col">
+    <div class="related-frame">
+      <div class="related-header">پست‌های مرتبط</div>
+      <div class="masonry">
         {% for p in related_posts %}
-            <a href="{% url 'post_detail' p.id %}" class="mini-card">
-                <img src="{{ p.image.url }}">
-            </a>
+        <a href="{% url 'post_detail' p.id %}" class="mini-card">
+          {% with p_media=p.media.first %}
+          {% if p_media %}
+          <img src="{{ p_media.file.url }}" alt="">
+          {% elif p.image %}
+          <img src="{{ p.image.url }}" alt="">
+          {% endif %}
+          {% endwith %}
+          <div class="mini-body">
+            <div class="mini-author-row">
+              <div class="mini-avatar">
+                {% if p.author.profile_picture %}
+                <img src="{{ p.author.profile_picture.url }}">
+                {% else %}
+                {{ p.author.username|first|upper }}
+                {% endif %}
+              </div>
+              <div class="mini-author">{{ p.author.username }}</div>
+            </div>
+            <div class="mini-text">{{ p.content|truncatechars:50 }}</div>
+          </div>
+        </a>
+        {% empty %}
+        <p style="font-size:13px;color:#9ca3af;">پست مرتبطی پیدا نشد</p>
         {% endfor %}
+      </div>
     </div>
-
+  </div>
 </div>

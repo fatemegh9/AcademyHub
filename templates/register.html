@@ -1,0 +1,619 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AcademyHub — ثبت‌نام</title>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      transform: translateY(100%);
+      transition: transform 0.6s cubic-bezier(0.76,0,0.24,1);
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    html, body {
+      height: 100%;
+      background: #080d18;
+      font-family: 'Vazirmatn', sans-serif;
+    }
+
+    .page {
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    /* ─── کارت ─── */
+    .card {
+      display: flex;
+      flex-direction: row-reverse;
+      width: 100%;
+      max-width: 900px;
+      min-height: 580px;
+      border-radius: 22px;
+      overflow: hidden;
+      border: 0.5px solid rgba(126,184,255,0.1);
+      box-shadow: 0 0 60px rgba(126,184,255,0.06);
+    }
+
+    /* ─── سمت راست — عکس ─── */
+    .card-img {
+      flex: 1.6;
+      background-image: url("{% static 'images/anime-study-vibe.jpg' %}");
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 36px;
+    }
+
+    .card-img::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(6,12,28,0.5);
+    }
+
+    .img-logo {
+      position: absolute;
+      top: 28px;
+      right: 28px;
+      z-index: 1;
+      font-size: 17px;
+      font-weight: 700;
+      color: #f0f4ff;
+      text-decoration: none;
+    }
+    .img-logo-dot { color: #f5a623; }
+
+    .img-text { position: relative; z-index: 1; }
+
+    .img-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      color: rgba(245,166,35,0.8);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+
+    .img-title {
+      font-size: 30px;
+      font-weight: 900;
+      color: #f0f4ff;
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+    .img-title span { color: #f5a623; }
+
+    .img-sub {
+      font-size: 13px;
+      color: rgba(240,244,255,0.45);
+      line-height: 1.7;
+    }
+
+    /* steps نمایش در عکس */
+    .img-steps {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .img-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(240,244,255,0.25);
+      color: rgba(240,244,255,0.4);
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: border-color 0.3s, color 0.3s, background 0.3s;
+    }
+
+    .step-num.active {
+      border-color: #f5a623;
+      color: #0a0b0f;
+      background: #f5a623;
+    }
+
+    .step-num.done {
+      border-color: rgba(126,184,255,0.5);
+      color: #7eb8ff;
+      background: rgba(126,184,255,0.1);
+    }
+
+    .step-label {
+      font-size: 13px;
+      color: rgba(240,244,255,0.35);
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+    .step-label.active { color: #f0f4ff; }
+    .step-label.done { color: rgba(126,184,255,0.6); }
+
+    /* ─── سمت چپ — فرم ─── */
+    .card-form {
+      width: 340px;
+      flex-shrink: 0;
+      background: #f0f4ff;
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .form-header { margin-bottom: 28px; }
+
+    .form-step-badge {
+      font-size: 11px;
+      color: #7eb8ff;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+    }
+
+    .form-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #080d18;
+      margin-bottom: 4px;
+    }
+
+    .form-sub {
+      font-size: 13px;
+      color: #7a8aaa;
+      line-height: 1.6;
+    }
+
+    /* progress bar */
+    .progress-bar {
+      height: 3px;
+      background: #dde4f0;
+      border-radius: 2px;
+      margin-bottom: 28px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #7eb8ff;
+      border-radius: 2px;
+      transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* فیلدها */
+    .step-form { display: none; flex-direction: column; flex: 1; }
+    .step-form.active { display: flex; }
+
+    .field { margin-bottom: 14px; }
+
+    .field label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: #4a5a7a;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .optional {
+      font-size: 10px;
+      color: #b0bdd0;
+      font-weight: 400;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      background: #fff;
+      border: 1.5px solid #dde4f0;
+      border-radius: 9px;
+      padding: 10px 13px;
+      font-size: 13px;
+      font-family: 'Vazirmatn', sans-serif;
+      color: #080d18;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      direction: rtl;
+    }
+
+    .field input[type="email"],
+    .field input[type="tel"] {
+      direction: ltr;
+      text-align: right;
+    }
+
+    .field input::placeholder,
+    .field textarea::placeholder { color: #b0bdd0; }
+
+    .field input:focus,
+    .field textarea:focus {
+      border-color: #7eb8ff;
+      box-shadow: 0 0 0 3px rgba(126,184,255,0.15);
+    }
+
+    .field textarea {
+      resize: none;
+      height: 80px;
+      line-height: 1.6;
+    }
+
+    /* آپلود عکس */
+    .avatar-upload {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 18px;
+      border: 1.5px dashed #dde4f0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: #fff;
+      margin-bottom: 14px;
+    }
+
+    .avatar-upload:hover {
+      border-color: #7eb8ff;
+      background: rgba(126,184,255,0.03);
+    }
+
+    .avatar-preview {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: #e4eaf5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-size: 24px;
+    }
+
+    .avatar-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    .avatar-upload-text { font-size: 12px; color: #7a8aaa; text-align: center; }
+    .avatar-upload-text span { color: #7eb8ff; font-weight: 600; }
+
+    input[type="file"] { display: none; }
+
+    /* دکمه‌های ناوبری */
+    .form-nav {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+      padding-top: 20px;
+    }
+
+    .btn-back {
+      background: transparent;
+      color: #4a5a7a;
+      font-family: 'Vazirmatn', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 11px 20px;
+      border-radius: 9px;
+      border: 1.5px solid #dde4f0;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      white-space: nowrap;
+    }
+    .btn-back:hover { border-color: #7eb8ff; color: #7eb8ff; }
+
+    .btn-next {
+      flex: 1;
+      background: #080d18;
+      color: #f0f4ff;
+      font-family: 'Vazirmatn', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 11px;
+      border-radius: 9px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-next:hover { background: #0f1a30; transform: translateY(-1px); }
+    .btn-next:active { transform: scale(0.98); }
+
+    .btn-submit-final {
+      flex: 1;
+      background: #f5a623;
+      color: #0a0b0f;
+      font-family: 'Vazirmatn', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 11px;
+      border-radius: 9px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-submit-final:hover { background: #ffc14d; transform: translateY(-1px); }
+
+    /* لینک ورود */
+    .login-link {
+      text-align: center;
+      font-size: 12px;
+      color: #7a8aaa;
+      margin-top: 14px;
+    }
+    .login-link a { color: #7eb8ff; text-decoration: none; font-weight: 600; }
+    .login-link a:hover { color: #4a9aff; }
+
+    /* خطا */
+    .error-msg {
+      background: rgba(220,60,60,0.08);
+      border: 1px solid rgba(220,60,60,0.2);
+      color: #e05555;
+      font-size: 12px;
+      padding: 9px 13px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      display: none;
+    }
+    .error-msg.show { display: block; }
+
+    /* موبایل */
+    @media (max-width: 700px) {
+      .card { flex-direction: column; max-width: 420px; }
+      .card-img { flex: none; min-height: 180px; }
+      .img-steps { display: none; }
+      .card-form { width: 100%; padding: 28px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+  <div class="card">
+
+    <!-- سمت راست — عکس -->
+    <div class="card-img">
+      <a href="/" class="img-logo">Academy<span class="img-logo-dot">.</span>Hub</a>
+
+      <div class="img-steps">
+        <div class="img-step">
+          <div class="step-num active" id="snum-1">1</div>
+          <div class="step-label active" id="slabel-1">اطلاعات حساب</div>
+        </div>
+        <div class="img-step">
+          <div class="step-num" id="snum-2">2</div>
+          <div class="step-label" id="slabel-2">اطلاعات دانشگاهی</div>
+        </div>
+        <div class="img-step">
+          <div class="step-num" id="snum-3">3</div>
+          <div class="step-label" id="slabel-3">پروفایل</div>
+        </div>
+      </div>
+
+      <div class="img-text">
+        <div class="img-eyebrow">ثبت‌نام رایگان</div>
+        <div class="img-title">بپیوند به<br><span>AcademyHub</span></div>
+        <div class="img-sub">یه دقیقه وقت میبره.</div>
+      </div>
+    </div>
+
+    <!-- سمت چپ — فرم -->
+    <div class="card-form">
+
+      <div class="form-header">
+        <div class="form-step-badge" id="step-badge">مرحله ۱ از ۳</div>
+        <div class="form-title" id="step-title">اطلاعات حساب</div>
+        <div class="form-sub" id="step-sub">برای ورود به سایت استفاده میشه.</div>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width:33%"></div>
+      </div>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="error-msg show">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="POST" action="{% url 'register' %}" enctype="multipart/form-data" id="register-form">
+        {% csrf_token %}
+
+        <!-- مرحله ۱ — حساب -->
+        <div class="step-form active" id="step-1">
+          <div class="field">
+            <label for="full_name">نام و نام خانوادگی</label>
+            <input type="text" id="full_name" name="full_name" placeholder="علی احمدی" required>
+          </div>
+          <div class="field">
+            <label for="email">ایمیل</label>
+            <input type="email" id="email" name="email" placeholder="example@email.com" autocomplete="email" required>
+          </div>
+          <div class="field">
+            <label for="phone">شماره موبایل</label>
+            <input type="tel" id="phone" name="phone" placeholder="09123456789" required>
+          </div>
+          <div class="field">
+            <label for="password1">رمز عبور</label>
+            <input type="password" id="password1" name="password1" placeholder="••••••••" autocomplete="new-password" required>
+          </div>
+          <div class="field">
+            <label for="password2">تکرار رمز عبور</label>
+            <input type="password" id="password2" name="password2" placeholder="••••••••" autocomplete="new-password" required>
+          </div>
+
+          <div class="form-nav">
+            <button type="button" class="btn-next" onclick="nextStep(2)">مرحله بعد ←</button>
+          </div>
+          <div class="login-link">قبلاً ثبت‌نام کردی؟ <a href="{% url 'login' %}">ورود</a></div>
+        </div>
+
+        <!-- مرحله ۲ — دانشگاهی -->
+        <div class="step-form" id="step-2">
+          <div class="field">
+            <label for="university">دانشگاه</label>
+            <input type="text" id="university" name="university" placeholder="دانشگاه تهران" required>
+          </div>
+          <div class="field">
+            <label for="major">رشته تحصیلی</label>
+            <input type="text" id="major" name="major" placeholder="مهندسی کامپیوتر" required>
+          </div>
+          <div class="field">
+            <label for="student_id">
+              شماره دانشجویی
+              <span class="optional">(اختیاری)</span>
+            </label>
+            <input type="text" id="student_id" name="student_id" placeholder="9912345678">
+          </div>
+
+          <div class="form-nav">
+            <button type="button" class="btn-back" onclick="prevStep(1)">→ قبلی</button>
+            <button type="button" class="btn-next" onclick="nextStep(3)">مرحله بعد ←</button>
+          </div>
+        </div>
+
+        <!-- مرحله ۳ — پروفایل -->
+        <div class="step-form" id="step-3">
+          <label class="avatar-upload" for="avatar-input" id="avatar-label">
+            <div class="avatar-preview" id="avatar-preview">
+              🎓
+              <img id="avatar-img" src="" alt="">
+            </div>
+            <div class="avatar-upload-text">
+              <span>انتخاب عکس پروفایل</span><br>اختیاریه
+            </div>
+          </label>
+          <input type="file" id="avatar-input" name="avatar" accept="image/*" onchange="previewAvatar(this)">
+
+          <div class="field">
+            <label for="bio">
+              بایو
+              <span class="optional">(اختیاری)</span>
+            </label>
+            <textarea id="bio" name="bio" placeholder="یه چیز کوتاه درباره خودت بنویس..."></textarea>
+          </div>
+
+          <div class="form-nav">
+            <button type="button" class="btn-back" onclick="prevStep(2)">→ قبلی</button>
+            <button type="submit" class="btn-submit-final">ثبت‌نام ✓</button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // slide-in از پایین
+  window.addEventListener('load', () => {
+    document.body.style.transform = 'translateY(0)';
+  });
+
+  const stepTitles = {
+    1: { badge: 'مرحله ۱ از ۳', title: 'اطلاعات حساب', sub: 'برای ورود به سایت استفاده میشه.' },
+    2: { badge: 'مرحله ۲ از ۳', title: 'اطلاعات دانشگاهی', sub: 'رشته و دانشگاهت رو وارد کن.' },
+    3: { badge: 'مرحله ۳ از ۳', title: 'پروفایل', sub: 'عکس و بایو — هر دو اختیاریه.' },
+  };
+
+  const progressMap = { 1: '33%', 2: '66%', 3: '100%' };
+
+  function nextStep(n) {
+    // validate مرحله قبل
+    const current = n - 1;
+    const inputs = document.querySelectorAll(`#step-${current} input[required]`);
+    for (let inp of inputs) {
+      if (!inp.value.trim()) {
+        inp.focus();
+        inp.style.borderColor = '#e05555';
+        inp.style.boxShadow = '0 0 0 3px rgba(220,60,60,0.12)';
+        setTimeout(() => {
+          inp.style.borderColor = '';
+          inp.style.boxShadow = '';
+        }, 2000);
+        return;
+      }
+    }
+
+    // بررسی تطابق رمز در مرحله ۱
+    if (current === 1) {
+      const p1 = document.getElementById('password1').value;
+      const p2 = document.getElementById('password2').value;
+      if (p1 !== p2) {
+        const el = document.getElementById('password2');
+        el.focus();
+        el.style.borderColor = '#e05555';
+        el.style.boxShadow = '0 0 0 3px rgba(220,60,60,0.12)';
+        setTimeout(() => { el.style.borderColor = ''; el.style.boxShadow = ''; }, 2000);
+        return;
+      }
+    }
+
+    goToStep(n);
+  }
+
+  function prevStep(n) { goToStep(n); }
+
+  function goToStep(n) {
+    document.querySelectorAll('.step-form').forEach(s => s.classList.remove('active'));
+    document.getElementById('step-' + n).classList.add('active');
+
+    document.getElementById('step-badge').textContent = stepTitles[n].badge;
+    document.getElementById('step-title').textContent = stepTitles[n].title;
+    document.getElementById('step-sub').textContent = stepTitles[n].sub;
+    document.getElementById('progress-fill').style.width = progressMap[n];
+
+    // آپدیت step indicators
+    for (let i = 1; i <= 3; i++) {
+      const num = document.getElementById('snum-' + i);
+      const label = document.getElementById('slabel-' + i);
+      if (!num) continue;
+      num.className = 'step-num' + (i < n ? ' done' : i === n ? ' active' : '');
+      label.className = 'step-label' + (i < n ? ' done' : i === n ? ' active' : '');
+      if (i < n) num.textContent = '✓';
+      else num.textContent = i;
+    }
+  }
+
+  function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.getElementById('avatar-img');
+        img.src = e.target.result;
+        img.style.display = 'block';
+        document.getElementById('avatar-preview').textContent = '';
+        document.getElementById('avatar-preview').appendChild(img);
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+</script>
+
+</body>
+</html>

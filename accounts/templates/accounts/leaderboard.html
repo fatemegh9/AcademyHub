@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}بورد رقابتی{% endblock %}
+
+{% block content %}
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+.lb-wrap{direction:rtl;max-width:480px;margin:0 auto;padding:2rem 1rem;}
+.lb-title{font-size:20px;font-weight:700;color:#122248;margin-bottom:1.25rem;}
+.lb-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;border:1px solid #eee;background:#fff;margin-bottom:10px;text-decoration:none;color:inherit;transition:border-color .15s;}
+.lb-item:hover{border-color:#c5d3ec;}
+.lb-item.top1{border-color:#fbbf24;background:#fffbeb;}
+.lb-item.top2{border-color:#d1d5db;background:#f9fafb;}
+.lb-item.top3{border-color:#fdba74;background:#fff7ed;}
+.lb-rank{width:28px;text-align:center;font-size:14px;font-weight:700;color:#6b7280;}
+.lb-avatar{width:38px;height:38px;border-radius:50%;background:#eef2fa;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#1d3b7a;flex-shrink:0;overflow:hidden;}
+.lb-avatar img{width:100%;height:100%;object-fit:cover;}
+.lb-body{flex:1;}
+.lb-name{font-size:14px;font-weight:600;color:#122248;}
+.lb-level{font-size:11px;color:#9ca3af;}
+.lb-xp{font-size:14px;font-weight:700;color:#122248;}
+</style>
+
+<div class="lb-wrap">
+  <div class="lb-title">🏆 بورد برترین دانشجوها</div>
+
+  {% for u in top_users %}
+  <a href="{% url 'profile_view' u.username %}" class="lb-item {% if forloop.counter == 1 %}top1{% elif forloop.counter == 2 %}top2{% elif forloop.counter == 3 %}top3{% endif %}">
+    <div class="lb-rank">
+      {% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}{{ forloop.counter }}{% endif %}
+    </div>
+    <div class="lb-avatar">
+      {% if u.profile_picture %}
+      <img src="{{ u.profile_picture.url }}">
+      {% else %}
+      {{ u.username|first|upper }}
+      {% endif %}
+    </div>
+    <div class="lb-body">
+      <div class="lb-name">{{ u.username }}</div>
+      <div class="lb-level">{{ u.get_level }}</div>
+    </div>
+    <div class="lb-xp">{{ u.xp }}</div>
+  </a>
+  {% empty %}
+  <p style="text-align:center;color:#9ca3af;">هنوز کاربری امتیاز نگرفته</p>
+  {% endfor %}
+</div>
+{% endblock %}

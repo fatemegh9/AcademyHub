@@ -3,34 +3,493 @@
 {% block title %}ویرایش پروفایل{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h4>ویرایش پروفایل</h4>
-            </div>
-            <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    {% for field in form %}
-                        <div class="mb-3">
-                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.help_text %}
-                                <small class="form-text text-muted">{{ field.help_text }}</small>
-                            {% endif %}
-                            {% for error in field.errors %}
-                                <div class="alert alert-danger">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-                    {% endfor %}
-                    
-                    <button type="submit" class="btn btn-primary">ذخیره تغییرات</button>
-                    <a href="{% url 'profile_view' user.username %}" class="btn btn-secondary">انصراف</a>
-                </form>
-            </div>
-        </div>
+<div class="cp-wrap">
+  <div class="cp-card">
+
+    <div class="cp-bar">
+      <div class="cp-dots">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
+      </div>
+      <span class="cp-bar-title">ویرایش پروفایل</span>
+      <a href="{% url 'profile_view' user.username %}" class="cp-close" title="بازگشت">&#x2715;</a>
     </div>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="cp-canvas" id="cpCanvas">
+
+        <!-- ستون عکس پروفایل -->
+        <div class="cp-panel" id="avatarPanel">
+          <div class="cp-panel-header">
+            <span>عکس پروفایل</span>
+          </div>
+
+          <div class="cp-panel-body">
+
+            {% for field in form %}
+              {% if field.field.widget.input_type == "file" %}
+              <div class="cp-drop" id="dz-{{ field.id_for_label }}"
+                   onclick="document.getElementById('{{ field.id_for_label }}').click()"
+                   ondragover="dzOver(event, 'dz-{{ field.id_for_label }}')"
+                   ondragleave="dzLeave(event, 'dz-{{ field.id_for_label }}')"
+                   ondrop="dzDrop(event, '{{ field.id_for_label }}')">
+
+                <div class="cp-drop-inner" id="empty-{{ field.id_for_label }}" {% if field.value %}style="display:none"{% endif %}>
+                  <div class="cp-drop-icon">📤</div>
+                  <p class="cp-drop-title">عکس را اینجا رها کنید</p>
+                  <p class="cp-drop-sub">یا برای انتخاب کلیک کنید</p>
+                  <span class="cp-drop-badge">JPG · PNG</span>
+                </div>
+
+                <div class="cp-selected-file" id="selected-{{ field.id_for_label }}" {% if not field.value %}style="display:none"{% endif %}>
+                  <img class="cp-avatar-preview {% if not field.value %}hidden{% endif %}" id="preview-{{ field.id_for_label }}" {% if field.value %}src="{{ field.value.url }}"{% endif %} alt="">
+                  <div class="cp-file-card">
+                    <span id="name-{{ field.id_for_label }}">{% if field.value %}{{ field.value.name }}{% else %}---{% endif %}</span>
+                  </div>
+                  <button type="button" class="cp-change-btn" onclick="event.stopPropagation(); document.getElementById('{{ field.id_for_label }}').click()">تغییر عکس</button>
+                </div>
+
+                <div class="cp-raw-file" hidden>{{ field }}</div>
+              </div>
+              {% if field.help_text %}<small class="cp-help">{{ field.help_text }}</small>{% endif %}
+              {% if field.errors %}
+                <div class="cp-error-box">
+                  {% for error in field.errors %}<div class="cp-error">{{ error }}</div>{% endfor %}
+                </div>
+              {% endif %}
+              {% endif %}
+            {% endfor %}
+
+          </div>
+        </div>
+
+        <!-- ستون اطلاعات حساب -->
+        <div class="cp-panel">
+          <div class="cp-panel-header">
+            <span class="cp-panel-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </span>
+            <span>اطلاعات حساب کاربری</span>
+          </div>
+
+          <div class="cp-panel-body">
+
+            {% for field in form %}
+              {% if field.field.widget.input_type != "file" %}
+              <div class="cp-field">
+                <label for="{{ field.id_for_label }}" class="cp-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                  <small class="cp-help">{{ field.help_text }}</small>
+                {% endif %}
+                {% if field.errors %}
+                  <div class="cp-error-box">
+                    {% for error in field.errors %}<div class="cp-error">{{ error }}</div>{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+              {% endif %}
+            {% endfor %}
+
+          </div>
+        </div>
+
+      </div>
+
+      <div class="cp-footer">
+        <div class="cp-footer-left"></div>
+        <div class="cp-footer-right">
+          <a href="{% url 'profile_view' user.username %}" class="cp-btn-cancel">انصراف</a>
+          <button type="submit" class="cp-btn-publish">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            ذخیره تغییرات
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </div>
 </div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.cp-wrap {
+  min-height: 100vh;
+  background: #eef2fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  direction: rtl;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+.cp-card {
+  width: 100%;
+  max-width: 980px;
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid #dce4f3;
+  overflow: hidden;
+  box-shadow: 0 4px 32px rgba(18,34,72,.07);
+}
+
+/* ── Titlebar ── */
+.cp-bar {
+  background: linear-gradient(435deg, #122248, #1d3b7a);
+  padding: 13px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid rgba(0,0,0,.1);
+}
+
+.cp-dots { display: flex; gap: 6px; }
+.dot { width: 11px; height: 11px; border-radius: 50%; }
+.dot.red    { background: #ff5f57; }
+.dot.yellow { background: #febc2e; }
+.dot.green  { background: #28c840; }
+
+.cp-bar-title {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255,255,255,.45);
+  letter-spacing: .03em;
+}
+
+.cp-close {
+  font-size: 14px;
+  color: rgba(255,255,255,.35);
+  text-decoration: none;
+  line-height: 1;
+  transition: color .2s;
+}
+.cp-close:hover { color: #fff; }
+
+/* ── Canvas grid ── */
+.cp-canvas {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 1px;
+  background: #dce4f3;
+}
+
+.cp-panel { background: #fff; }
+
+.cp-panel-header {
+  padding: 15px 24px;
+  border-bottom: 1px solid #eef2fa;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #7a8fbb;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  background: #f7f9ff;
+}
+.cp-panel-icon { color: #a8b8d8; display: flex; align-items: center; }
+
+.cp-panel-body { padding: 28px; }
+
+/* ── Drop zone (avatar) ── */
+.cp-drop {
+  border: 1.5px dashed #c5d3ec;
+  border-radius: 12px;
+  background: #f7f9ff;
+  cursor: pointer;
+  transition: border-color .25s, background .25s;
+  position: relative;
+  overflow: hidden;
+}
+.cp-drop:hover {
+  border-color: #2b5cd9;
+  background: #f0f4ff;
+}
+
+.cp-drop-inner {
+  padding: 36px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  min-height: 260px;
+}
+.cp-drop-icon {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: #eef2fa;
+  border: 1px solid #dce4f3;
+  display: flex; align-items: center; justify-content: center;
+  color: #7a8fbb;
+  margin-bottom: 4px;
+  transition: all .25s;
+}
+.cp-drop:hover .cp-drop-icon {
+  background: #dce6ff;
+  border-color: #b5c4e4;
+  color: #2b5cd9;
+}
+.cp-drop-title { font-size: 15px; font-weight: 600; color: #3a547a; }
+.cp-drop-sub { font-size: 13px; color: #a8b8d8; }
+.cp-drop-badge {
+  margin-top: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid #dce4f3;
+  font-size: 11px;
+  color: #a8b8d8;
+  letter-spacing: .04em;
+  background: #fff;
+}
+
+.cp-selected-file {
+  padding: 28px 16px;
+  text-align: center;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.cp-avatar-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #dce4f3;
+  margin-bottom: 14px;
+  background: #fff;
+}
+.cp-file-card {
+  background: #eef2ff;
+  border: 1px solid #dce4f3;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: #122248;
+  font-weight: 600;
+  font-size: 12px;
+  margin-bottom: 12px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cp-change-btn {
+  background: #122248;
+  color: #fff;
+  border: none;
+  padding: 9px 16px;
+  border-radius: 9px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: .2s;
+  font-family: inherit;
+}
+.cp-change-btn:hover { background: #1d3b7a; }
+
+.cp-raw-file[hidden] { display: none; }
+
+.hidden { display: none; }
+
+/* ── Field group (right column) ── */
+.cp-field { margin-bottom: 20px; }
+.cp-field:last-child { margin-bottom: 0; }
+
+.cp-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #7a8fbb;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.cp-help {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #a8b8d8;
+}
+
+.cp-error-box { margin-top: 6px; }
+.cp-error {
+  font-size: 12px;
+  color: #c0392b;
+  background: #fdecea;
+  border: 1px solid #f6c4bd;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 4px;
+}
+
+/* generic styling for Django-rendered widgets */
+.cp-field input[type="text"],
+.cp-field input[type="email"],
+.cp-field input[type="number"],
+.cp-field input[type="url"],
+.cp-field input[type="tel"],
+.cp-field input[type="date"],
+.cp-field input[type="password"],
+.cp-field input[type="search"],
+.cp-field select,
+.cp-field textarea {
+  width: 100%;
+  background: #f7f9ff;
+  border: 1px solid #dce4f3;
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #122248;
+  outline: none;
+  transition: border-color .2s, background .2s, box-shadow .2s;
+}
+.cp-field textarea { min-height: 140px; line-height: 1.7; resize: vertical; }
+.cp-field input:focus,
+.cp-field select:focus,
+.cp-field textarea:focus {
+  border-color: #2b5cd9;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(43,92,217,.1);
+}
+.cp-field ::placeholder { color: #b8c8e0; }
+
+.cp-field input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #2b5cd9;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+/* ── Footer ── */
+.cp-footer {
+  padding: 12px 18px;
+  background: #f7f9ff;
+  border-top: 1px solid #dce4f3;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.cp-footer-right { display: flex; gap: 8px; align-items: center; }
+
+.cp-btn-cancel {
+  padding: 12px 24px;
+  border-radius: 9px;
+  border: 1px solid #dce4f3;
+  background: transparent;
+  color: #7a8fbb;
+  font-size: 13px;
+  text-decoration: none;
+  transition: background .2s, color .2s;
+  font-family: inherit;
+}
+.cp-btn-cancel:hover { background: #eef2fa; color: #1d3b7a; }
+
+.cp-btn-publish {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 28px;
+  border-radius: 9px;
+  border: none;
+  background: #152a5a;
+  color: #c8d8f8;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s, color .2s, transform .15s;
+  font-family: inherit;
+}
+.cp-btn-publish:hover { background: #1d3b7a; color: #fff; transform: translateY(-1px); }
+.cp-btn-publish:active { transform: translateY(0); }
+
+/* ── Mobile ── */
+@media (max-width: 650px) {
+  .cp-canvas { grid-template-columns: 1fr; }
+  .cp-wrap { padding: 0; align-items: flex-start; }
+  .cp-card { border-radius: 0; min-height: 100vh; }
+}
+</style>
+
+<script>
+function dzOver(e, zoneId) {
+  e.preventDefault();
+  document.getElementById(zoneId).style.borderColor = '#2b5cd9';
+}
+function dzLeave(e, zoneId) {
+  document.getElementById(zoneId).style.borderColor = '';
+}
+function dzDrop(e, inputId) {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  const input = document.getElementById(inputId);
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  input.files = dt.files;
+  input.dispatchEvent(new Event('change'));
+  const zone = input.closest('.cp-drop');
+  if (zone) zone.style.borderColor = '';
+}
+
+function bindAvatarField(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  input.addEventListener('change', function () {
+    const file = input.files[0];
+    if (!file) return;
+    const emptyBox = document.getElementById('empty-' + inputId);
+    const selectedBox = document.getElementById('selected-' + inputId);
+    const nameEl = document.getElementById('name-' + inputId);
+    const imgEl = document.getElementById('preview-' + inputId);
+
+    if (emptyBox) emptyBox.style.display = 'none';
+    if (selectedBox) selectedBox.style.display = '';
+    if (nameEl) nameEl.textContent = file.name;
+
+    if (imgEl && file.type && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        imgEl.src = ev.target.result;
+        imgEl.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const fileInputs = document.querySelectorAll('#avatarPanel input[type="file"]');
+
+  if (fileInputs.length === 0) {
+    // No file field on this form: collapse to a single column.
+    const panel = document.getElementById('avatarPanel');
+    const canvas = document.getElementById('cpCanvas');
+    if (panel) panel.style.display = 'none';
+    if (canvas) canvas.style.gridTemplateColumns = '1fr';
+  } else {
+    fileInputs.forEach(function (input) {
+      bindAvatarField(input.id);
+    });
+  }
+});
+</script>
 {% endblock %}

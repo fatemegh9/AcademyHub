@@ -5,7 +5,7 @@ from .models import User
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'field_of_study', 
+        fields = ['first_name', 'last_name', 'email','phone', 'university', 'field_of_study', 
                   'semester', 'bio', 'website', 'github', 'linkdin', 'profile_picture']
         
         widgets = {

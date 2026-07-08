@@ -1,91 +1,694 @@
 {% extends 'base.html' %}
 
-{% block title %}آپلود جزوه جدید{% endblock %}
+{% block title %}{% if note %}ویرایش جزوه{% else %}پست جدید{% endif %}{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h4>📤 آپلود جزوه جدید</h4>
-            </div>
-            <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="id_title" class="form-label">عنوان جزوه *</label>
-                        <input type="text" name="title" id="id_title" class="form-control" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="id_description" class="form-label">توضیحات</label>
-                        <textarea name="description" id="id_description" class="form-control" rows="4"></textarea>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="id_lesson_name" class="form-label">نام درس *</label>
-                        <input type="text" name="lesson_name" id="id_lesson_name" class="form-control" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="id_professor_name" class="form-label">نام استاد</label>
-                        <input type="text" name="professor_name" id="id_professor_name" class="form-control">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="id_tags_input" class="form-label">تگ‌ها</label>
-                        <textarea name="tags_input" id="id_tags_input" class="form-control" rows="3" placeholder="هر تگ را در یک خط بنویسید:&#10;ریاضی&#10;فیزیک&#10;برنامه نویسی"></textarea>
-                        <small class="form-text text-muted">هر تگ را در یک خط جداگانه وارد کنید</small>
-                    </div>
+<div class="cp-wrap">
+  <div class="cp-card">
 
+    <div class="cp-bar">
+      <div class="cp-dots">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
+      </div>
+      <span class="cp-bar-title">
+        {% if post %}ویرایش جزوه{% else %}ایجاد جزوه جدید{% endif %}
+      </span>
+      <a href="{% url 'timeline' %}" class="cp-close" title="بازگشت">&#x2715;</a>
+    </div>
 
-                    <div class="mb-3">
-                        <label for="id_file" class="form-label">فایل جزوه (PDF, DOC, ...) *</label>
-                        <input type="file" name="file" id="id_file" class="form-control" required>
-                    </div>
-                    
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">📤 آپلود</button>
-                        <a href="{% url 'note_list' %}" class="btn btn-secondary">🔙 بازگشت</a>
-                    </div>
+    <form method="post" action="{% if note %}{% url 'edit_note' note.id %}{% else %}{% url 'upload_note' %}{% endif %}" enctype="multipart/form-data">
+      {% csrf_token %}
 
-                    <div class="mb-3">
-                        <label class="form-label">مقطع تحصیلی</label>
-                        <select name="level" class="form-select">
-                            <option value="">انتخاب کنید...</option>
-                            <option value="associate">کاردانی</option>
-                            <option value="bachelor">کارشناسی</option>
-                            <option value="master">کارشناسی ارشد</option>
-                            <option value="phd">دکتری</option>
-                        </select>
-                    </div>
+      <div class="cp-canvas">
 
-                    <div class="mb-3">
-                        <label class="form-label">نوع جزوه</label>
-                        <select name="note_type" class="form-select">
-                            <option value="">انتخاب کنید...</option>
-                            <option value="handwritten">دستنویس</option>
-                            <option value="typed">تایپی</option>
-                            <option value="slide">اسلاید</option>
-                            <option value="exam">نمونه سوال</option>
-                        </select>
-                    </div>
+        <!-- ستون تصویر -->
+       <div class="cp-panel">
+    <div class="cp-panel-header">
+        <span>فایل جزوه</span>
+    </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">دانشگاه</label>
-                        <select name="university" class="form-select">
-                            <option value="">انتخاب کنید...</option>
-                            <option value="tehran">دانشگاه تهران</option>
-                            <option value="sharif">صنعتی شریف</option>
-                            <option value="azad">آزاد</option>
-                            <option value="pnu">پیام نور</option>
-                        </select>
-                    </div>
+    <div class="cp-panel-body">
 
-                </form>
-            </div>
+        <div class="cp-drop" id="dropZone"
+          onclick="document.getElementById('id_file').click()"
+          ondragover="dzOver(event)"
+          ondragleave="dzLeave(event)"
+          ondrop="dzDrop(event)">
+
+    <!-- حالت قبل انتخاب -->
+    <div class="cp-drop-inner {% if note.file %}hidden{% endif %}" id="dropEmpty">
+
+        <div class="cp-drop-icon">📤</div>
+
+        <p class="cp-drop-title">
+            فایل جزوه را اینجا رها کنید
+        </p>
+
+        <p class="cp-drop-sub">
+            یا برای انتخاب کلیک کنید
+        </p>
+
+        <span class="cp-drop-badge">
+            PDF · DOC · PPT
+        </span>
+
+    </div>
+
+    <!-- حالت بعد انتخاب -->
+    <div class="cp-selected-file {% if not note.file %}hidden{% endif %}" id="dropSelected">
+        <div class="cp-file-card">
+            📄 <span id="fileName">{% if note.file %}{{ note.file.name }}{% else %}---{% endif %}</span>
         </div>
+        <button type="button" class="cp-change-btn" onclick="resetFile(event)">تغییر فایل</button>
+    </div>
+
+<input type="file" id="id_file" name="file" hidden {% if not note %}required{% endif %} onchange="handleFile(this)">
+</div>
+
     </div>
 </div>
+
+        <!-- ستون محتوا -->
+        <div class="cp-panel">
+  <div class="cp-panel-header">
+    <span class="cp-panel-icon">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <line x1="21" y1="6" x2="3" y2="6"/>
+        <line x1="21" y1="12" x2="3" y2="12"/>
+        <line x1="17" y1="18" x2="3" y2="18"/>
+      </svg>
+    </span>
+    <span>اطلاعات جزوه</span>
+  </div>
+
+  <div class="cp-panel-body">
+
+<label class="cp-label">عنوان جزوه</label>
+<input type="text" name="title" class="cp-input" value="{{ note.title|default:'' }}" placeholder="مثال: جزوه ساختمان داده" required>
+
+<label class="cp-label">نام درس</label>
+<input type="text" name="lesson_name" class="cp-input" value="{{ note.lesson_name|default:'' }}" placeholder="مثال: ساختمان داده" required>
+
+<label class="cp-label">نام استاد</label>
+<input type="text" name="professor_name" class="cp-input" value="{{ note.professor_name|default:'' }}" placeholder="اختیاری">
+
+<label class="cp-label">توضیحات</label>
+<textarea name="description" class="cp-ta" maxlength="1000" oninput="updateChar(this)">{{ note.description|default:'' }}</textarea>
+
+<textarea name="tags_input" class="cp-ta cp-tags">{% if note %}{{ note.tags.all|join:"
+" }}{% endif %}</textarea>
+
+
+<div class="cp-char-row">
+  <div class="cp-char-bar">
+    <div class="cp-char-fill" id="charFill"></div>
+  </div>
+  <span class="cp-char-num" id="charNum">
+    0 / 1000
+  </span>
+</div>
+
+<label class="cp-label">تگ‌ها</label>
+<textarea
+  name="tags_input"
+  class="cp-ta cp-tags"
+  placeholder="هر تگ را در یک خط وارد کنید&#10;برنامه نویسی&#10;ساختمان داده&#10;دانشگاه"></textarea>
+
+<div class="cp-grid3">
+
+  <div>
+    <label class="cp-label">مقطع</label>
+    <select name="level" class="cp-select">
+      <option value="">انتخاب کنید</option>
+      <option value="associate">کاردانی</option>
+      <option value="bachelor">کارشناسی</option>
+      <option value="master">کارشناسی ارشد</option>
+      <option value="phd">دکتری</option>
+    </select>
+  </div>
+
+  <div>
+    <label class="cp-label">نوع جزوه</label>
+    <select name="note_type" class="cp-select">
+      <option value="">انتخاب کنید</option>
+      <option value="handwritten">دستنویس</option>
+      <option value="typed">تایپی</option>
+      <option value="slide">اسلاید</option>
+      <option value="exam">نمونه سوال</option>
+    </select>
+  </div>
+
+  <div>
+    <label class="cp-label">دانشگاه</label>
+    <select name="university" class="cp-select">
+      <option value="">انتخاب کنید</option>
+      <option value="tehran">دانشگاه تهران</option>
+      <option value="sharif">صنعتی شریف</option>
+      <option value="azad">آزاد</option>
+      <option value="pnu">پیام نور</option>
+    </select>
+  </div>
+
+</div>
+
+  </div>
+</div>
+
+
+      </div>
+
+      <div class="cp-footer">
+        <div class="cp-footer-left">
+          <button type="button" class="cp-tool-btn" title="هشتگ">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/>
+              <line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/>
+            </svg>
+          </button>
+          <button type="button" class="cp-tool-btn" title="موقعیت">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+          </button>
+          <button type="button" class="cp-tool-btn" title="تگ کاربر">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </button>
+        </div>
+        <div class="cp-footer-right">
+          <a href="{% url 'timeline' %}" class="cp-btn-cancel">انصراف</a>
+          <button type="submit" class="cp-btn-publish">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+            {% if note %}ذخیره تغییرات{% else %}انتشار جزوه{% endif %}
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.cp-wrap {
+  min-height: 100vh;
+  background: #eef2fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  direction: rtl;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+.cp-card {
+  width: 100%;
+  max-width: 1200px;
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid #dce4f3;
+  overflow: hidden;
+  box-shadow: 0 4px 32px rgba(18,34,72,.07);
+}
+
+/* ── Titlebar ── */
+.cp-bar {
+  background: linear-gradient(435deg, #122248, #1d3b7a);
+  padding: 13px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid rgba(0,0,0,.1);
+}
+
+.cp-dots { display: flex; gap: 6px; }
+.dot { width: 11px; height: 11px; border-radius: 50%; }
+.dot.red    { background: #ff5f57; }
+.dot.yellow { background: #febc2e; }
+.dot.green  { background: #28c840; }
+
+.cp-bar-title {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255,255,255,.45);
+  letter-spacing: .03em;
+}
+
+.cp-close {
+  font-size: 14px;
+  color: rgba(255,255,255,.35);
+  text-decoration: none;
+  line-height: 1;
+  transition: color .2s;
+}
+.cp-close:hover { color: #fff; }
+
+/* ── Canvas grid ── */
+.cp-canvas {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 1px;
+  background: #dce4f3;
+}
+
+/* ── Panel ── */
+.cp-panel { background: #fff; }
+
+.cp-panel-header {
+  padding: 15px 24px;
+  border-bottom: 1px solid #eef2fa;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #7a8fbb;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  background: #f7f9ff;
+}
+.cp-panel-icon { color: #a8b8d8; display: flex; align-items: center; }
+
+.cp-panel-body { padding: 28px; }
+
+/* ── Drop zone ── */
+.cp-preview {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  display: block;
+  border: 1px solid #dce4f3;
+}
+.cp-preview.hidden { display: none; }
+
+.cp-drop {
+  border: 1.5px dashed #c5d3ec;
+  border-radius: 12px;
+  background: #f7f9ff;
+  cursor: pointer;
+  transition: border-color .25s, background .25s;
+  position: relative;
+  overflow: hidden;
+}
+.cp-drop:hover {
+  border-color: #2b5cd9;
+  background: #f0f4ff;
+}
+.cp-drop input[type="file"] {
+  position: absolute; inset: 0;
+  opacity: 0; cursor: pointer;
+  width: 100%; height: 100%;
+}
+.cp-drop-inner{
+    padding: 80px 20px;   
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;  
+    text-align: center;
+    gap: 8px;
+    min-height: 420px; 
+}
+.cp-drop-icon {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: #eef2fa;
+  border: 1px solid #dce4f3;
+  display: flex; align-items: center; justify-content: center;
+  color: #7a8fbb;
+  margin-bottom: 4px;
+  transition: all .25s;
+}
+.cp-drop:hover .cp-drop-icon {
+  background: #dce6ff;
+  border-color: #b5c4e4;
+  color: #2b5cd9;
+}
+.cp-drop-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #3a547a;
+}
+.cp-drop-sub { font-size: 14px; color: #a8b8d8; }
+.cp-drop-badge {
+  margin-top: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid #dce4f3;
+  font-size: 12px;
+  color: #a8b8d8;
+  letter-spacing: .04em;
+  background: #fff;
+}
+
+.cp-selected-file{
+    padding:60px 20px;
+    text-align:center;
+}
+
+.cp-file-card{
+    background:#eef2ff;
+    border:1px solid #dce4f3;
+    padding:14px;
+    border-radius:12px;
+    color:#122248;
+    font-weight:600;
+    margin-bottom:12px;
+}
+
+.cp-change-btn{
+    background:#122248;
+    color:#fff;
+    border:none;
+    padding:10px 18px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.cp-change-btn:hover{
+    background:#1d3b7a;
+}
+
+.hidden{
+    display:none;
+}
+
+/* ── Caption ── */
+.cp-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #7a8fbb;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.cp-ta {
+  width: 100%;
+  min-height: 260px;
+  background: #f7f9ff;
+  border: 1px solid #dce4f3;
+  border-radius: 10px;
+  padding: 18px;
+  color: #122248;
+  font-size: 15px;
+  font-family: inherit;
+  line-height: 1.7;
+  resize: none;
+  outline: none;
+  transition: border-color .2s, background .2s, box-shadow .2s;
+}
+.cp-ta:focus {
+  border-color: #2b5cd9;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(43,92,217,.1);
+}
+.cp-ta::placeholder { color: #b8c8e0; }
+
+.cp-char-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 7px;
+}
+.cp-char-bar {
+  flex: 1; height: 2px;
+  background: #eef2fa;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.cp-char-fill {
+  height: 100%; width: 0%;
+  background: #2b5cd9;
+  border-radius: 2px;
+  transition: width .2s;
+}
+.cp-char-num { font-size: 10px; color: #a8b8d8; white-space: nowrap; }
+
+/* ── Visibility ── */
+.cp-vis-row { display: flex; gap: 8px; }
+.cp-vis-opt input[type="radio"] { display: none; }
+.cp-vis-card {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid #dce4f3;
+  background: #f7f9ff;
+  font-size: 12px;
+  color: #7a8fbb;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.cp-vis-card:hover {
+  border-color: #2b5cd9;
+  color: #1d3b7a;
+}
+.cp-vis-opt input:checked + .cp-vis-card {
+  border-color: #2b5cd9;
+  background: #eef2ff;
+  color: #1d3b7a;
+  font-weight: 600;
+}
+
+/* ── Footer ── */
+.cp-footer {
+  padding: 12px 18px;
+  background: #f7f9ff;
+  border-top: 1px solid #dce4f3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cp-footer-left { display: flex; gap: 4px; }
+
+.cp-tool-btn {
+  width: 32px; height: 32px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: #a8b8d8;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.cp-tool-btn:hover {
+  background: #eef2fa;
+  color: #1d3b7a;
+}
+
+.cp-footer-right { display: flex; gap: 8px; align-items: center; }
+
+.cp-btn-cancel {
+  padding: 12px 24px;
+  border-radius: 9px;
+  border: 1px solid #dce4f3;
+  background: transparent;
+  color: #7a8fbb;
+  font-size: 13px;
+  text-decoration: none;
+  transition: background .2s, color .2s;
+  font-family: inherit;
+}
+.cp-btn-cancel:hover {
+  background: #eef2fa;
+  color: #1d3b7a;
+}
+
+.cp-btn-publish {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 28px;
+  border-radius: 9px;
+  border: none;
+  background: #152a5a;
+  color: #c8d8f8;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s, transform .15s;
+  font-family: inherit;
+}
+.cp-btn-publish:hover {
+  background: #1d3b7a;
+  color: #fff;
+  transform: translateY(-1px);
+}
+.cp-btn-publish:active { transform: translateY(0); }
+
+.cp-tips-box{
+
+    display:flex;
+    flex-direction:column;
+
+    gap:10px;
+
+    margin-top:20px;
+}
+
+.cp-tip{
+
+    background:#f7f9ff;
+
+    border:1px solid #dce4f3;
+
+    border-radius:12px;
+
+    padding:12px 15px;
+
+    font-size:14px;
+
+    color:#496188;
+}
+
+.cp-input,
+.cp-select{
+    width:100%;
+    background:#f7f9ff;
+    border:1px solid #dce4f3;
+    border-radius:10px;
+    padding:14px 16px;
+    font-size:14px;
+    color:#122248;
+    outline:none;
+    transition:.2s;
+}
+
+.cp-input:focus,
+.cp-select:focus{
+    border-color:#2b5cd9;
+    background:#fff;
+    box-shadow:0 0 0 3px rgba(43,92,217,.1);
+}
+
+.cp-grid3{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px;
+    margin-top:14px;
+}
+
+.cp-tags{
+    min-height:100px;
+}
+
+@media(max-width:768px){
+    .cp-grid3{
+        grid-template-columns:1fr;
+    }
+}
+
+/* ── Mobile ── */
+@media (max-width: 650px) {
+  .cp-canvas { grid-template-columns: 1fr; }
+  .cp-wrap { padding: 0; align-items: flex-start; }
+  .cp-card { border-radius: 0; min-height: 100vh; }
+  .cp-vis-row { flex-wrap: wrap; }
+}
+</style>
+
+<script>
+function showFileName(input){
+
+    const file = input.files[0];
+
+    if(!file) return;
+
+    document.getElementById('fileName').innerHTML =
+        '<strong>' + file.name + '</strong>';
+
+}
+
+function dzOver(e){
+    e.preventDefault();
+    document.getElementById('dropZone').style.borderColor='#2b5cd9';
+}
+
+function dzLeave(e){
+    document.getElementById('dropZone').style.borderColor='';
+}
+
+function dzDrop(e){
+
+    e.preventDefault();
+
+    const file=e.dataTransfer.files[0];
+
+    if(!file) return;
+
+    const input=document.getElementById('id_file');
+
+    const dt=new DataTransfer();
+
+    dt.items.add(file);
+
+    input.files=dt.files;
+
+    showFileName(input);
+
+    document.getElementById('dropZone').style.borderColor='';
+}
+
+function handleFile(input){
+
+    const file = input.files[0];
+    if(!file) return;
+
+    document.getElementById('fileName').textContent = file.name;
+
+    // hide empty state
+    document.getElementById('dropEmpty').classList.add('hidden');
+
+    // show selected state
+    document.getElementById('dropSelected').classList.remove('hidden');
+}
+
+function resetFile(e){
+    e.stopPropagation();
+
+    const input = document.getElementById('id_file');
+    input.value = "";
+
+    // reset UI
+    document.getElementById('dropEmpty').classList.remove('hidden');
+    document.getElementById('dropSelected').classList.add('hidden');
+}
+
+function dzDrop(e){
+    e.preventDefault();
+
+    const file = e.dataTransfer.files[0];
+    if(!file) return;
+
+    const input = document.getElementById('id_file');
+
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    input.files = dt.files;
+
+    handleFile(input);
+
+    document.getElementById('dropZone').style.borderColor='';
+}
+</script>
 {% endblock %}
