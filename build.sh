@@ -8,5 +8,5 @@ python manage.py shell -c "from django.conf import settings; print('STATICFILES_
 echo "=== DEBUG: findstatic test ==="
 python manage.py findstatic css/base.css -v2
 
-python manage.py collectstatic --no-input -v 3
+python manage.py collectstatic --no-input 
 python manage.py migrate

@@ -42,6 +42,7 @@ media/
 
 # Static files (اگر collectstatic استفاده می‌کنی)
 staticfiles/
+static_root/
 
 # Local settings
 local_settings.py
