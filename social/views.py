@@ -13,8 +13,6 @@ import re
 from django.db.models import Count
 from accounts.services.xp import add_xp
 
-
-
 @login_required
 def timeline(request):
     if not request.user.is_authenticated:
