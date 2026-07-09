@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'cloudinary',
     'cloudinary_storage',
     'django.contrib.staticfiles',
     'accounts',
@@ -49,7 +50,6 @@ INSTALLED_APPS = [
     'social',
     'qa',
     'chat',
-    'cloudinary',
 ]
 
 CLOUDINARY_STORAGE = {
@@ -142,6 +142,8 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
