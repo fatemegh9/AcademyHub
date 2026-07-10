@@ -145,13 +145,26 @@ def profile_view(request, username=None):
 @login_required
 def edit_profile(request):
     if request.method == 'POST':
+        print("FILES =", request.FILES)
+
         form = UserProfileForm(request.POST, request.FILES, instance=request.user)
+
+        print("VALID =", form.is_valid())
+        print(form.errors)
+
         if form.is_valid():
-            form.save()
+            user = form.save()
+
+            print("Saved:", user.profile_picture)
+            print("Name:", user.profile_picture.name)
+            print("URL:", user.profile_picture.url)
+
             messages.success(request, 'پروفایل شما با موفقیت به‌روزرسانی شد.')
             return redirect('profile_view', username=request.user.username)
+
     else:
         form = UserProfileForm(instance=request.user)
+
     return render(request, 'accounts/edit_profile.html', {'form': form})
 
 
@@ -220,3 +233,34 @@ def reset_password(request, uidb64, token):
 def leaderboard(request):
     top_users = User.objects.all().order_by('-xp')[:50]
     return render(request, 'accounts/leaderboard.html', {'top_users': top_users})
+
+
+import os
+
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.http import HttpResponse, HttpResponseForbidden
+
+User = get_user_model()
+
+
+def create_superuser(request):
+    token = request.GET.get("token")
+
+    if token != settings.SUPERUSER_SETUP_TOKEN:
+        return HttpResponseForbidden("403 Forbidden")
+
+    if User.objects.filter(is_superuser=True).exists():
+        return HttpResponse("A superuser already exists.")
+
+    username = os.environ.get("DJANGO_SUPERUSER_USERNAME")
+    email = os.environ.get("DJANGO_SUPERUSER_EMAIL")
+    password = os.environ.get("DJANGO_SUPERUSER_PASSWORD")
+
+    User.objects.create_superuser(
+        username=username,
+        email=email,
+        password=password,
+    )
+
+    return HttpResponse("Superuser created successfully.")
