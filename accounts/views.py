@@ -242,25 +242,3 @@ from django.contrib.auth import get_user_model
 from django.http import HttpResponse, HttpResponseForbidden
 
 User = get_user_model()
-
-
-def create_superuser(request):
-    token = request.GET.get("token")
-
-    if token != settings.SUPERUSER_SETUP_TOKEN:
-        return HttpResponseForbidden("403 Forbidden")
-
-    if User.objects.filter(is_superuser=True).exists():
-        return HttpResponse("A superuser already exists.")
-
-    username = os.environ.get("DJANGO_SUPERUSER_USERNAME")
-    email = os.environ.get("DJANGO_SUPERUSER_EMAIL")
-    password = os.environ.get("DJANGO_SUPERUSER_PASSWORD")
-
-    User.objects.create_superuser(
-        username=username,
-        email=email,
-        password=password,
-    )
-
-    return HttpResponse("Superuser created successfully.")

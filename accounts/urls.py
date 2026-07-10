@@ -15,5 +15,4 @@ urlpatterns = [
     path('forgot-password/', views.forgot_password, name='forgot_password'),
     path('reset/<uidb64>/<token>/', views.reset_password, name='reset_password'),
     path('leaderboard/', views.leaderboard, name='leaderboard'),
-    path("create-superuser/", create_superuser),
 ]
