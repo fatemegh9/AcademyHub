@@ -245,22 +245,14 @@ User = get_user_model()
 
 
 def create_superuser(request):
-    token = request.GET.get("token")
+    import os
+    from django.http import HttpResponse
+    from django.conf import settings
 
-    if token != settings.SUPERUSER_SETUP_TOKEN:
-        return HttpResponseForbidden("403 Forbidden")
-
-    if User.objects.filter(is_superuser=True).exists():
-        return HttpResponse("A superuser already exists.")
-
-    username = os.environ.get("DJANGO_SUPERUSER_USERNAME")
-    email = os.environ.get("DJANGO_SUPERUSER_EMAIL")
-    password = os.environ.get("DJANGO_SUPERUSER_PASSWORD")
-
-    User.objects.create_superuser(
-        username=username,
-        email=email,
-        password=password,
-    )
-
-    return HttpResponse("Superuser created successfully.")
+    return HttpResponse(f"""
+    URL token = {request.GET.get("token")}<br>
+    Settings token = {settings.SUPERUSER_SETUP_TOKEN}<br>
+    USERNAME = {os.environ.get("DJANGO_SUPERUSER_USERNAME")}<br>
+    EMAIL = {os.environ.get("DJANGO_SUPERUSER_EMAIL")}<br>
+    PASSWORD EXISTS = {os.environ.get("DJANGO_SUPERUSER_PASSWORD") is not None}
+    """)
