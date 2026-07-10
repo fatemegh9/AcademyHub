@@ -1,6 +1,5 @@
 from django.urls import path
 from . import views
-from .views import create_superuser
 from social.views import timeline
 
 urlpatterns = [
