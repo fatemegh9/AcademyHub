@@ -261,12 +261,28 @@
     color:#374151;
 }
 
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-title .stat-icon img {
+    width: 28px;
+    height: 28px;
+}
+
 </style>
 
 <div class="upload-note-wrapper">
     <a href="{% url 'upload_note' %}" class="upload-note-btn">
         <div>
-            <div class="upload-title" style="color:white;">📚 آپلود جزوه جدید</div>
+            <div class="upload-title">
+                <span class="stat-icon">
+                    <img src="{% static 'icons/mage--star.svg' %}" alt="Book">
+                </span>
+                آپلود جزوه جدید
+            </div>
             <div class="upload-subtitle">
                 جزوه‌هات رو با بقیه دانشجوها به اشتراک بذار
             </div>
@@ -337,7 +353,12 @@
 
         <!-- باکس 1: محبوب‌ترین -->
         <div style="background:#1C3368; border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px white; margin-bottom: 20px;">
-            <h3 style="color:white;">🔥 محبوب‌ترین جزوه‌ها</h3>
+            <h3 class="section-title" >
+                <span class="stat-icon">
+                    <img src="{% static 'icons/fluent-emoji-flat--fire.svg' %}" alt="Fire">
+                </span>
+                محبوب‌ترین جزوه‌ها
+            </h3>
             <hr>
             <div class="hide-scrollbar" style="display: grid;
 grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -370,14 +391,19 @@ gap: 20px;">
                     {% endif %}
                 </div>
                 {% empty %}
-                <p>هیچ جزوه‌ای وجود ندارد.</p>
+                <p style="color: white;">هیچ جزوه‌ای وجود ندارد.</p>
                 {% endfor %}
             </div>
         </div>
 
         <!-- باکس 2: جدیدترین -->
         <div style="background:#1C3368; border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <h3 style="color:white;">🆕 جدیدترین جزوه‌ها</h3>
+            <h3 class="section-title">
+                <span class="stat-icon">
+                    <img src="{% static 'icons/material.svg' %}" alt="New">
+                </span>
+                جدیدترین جزوه‌ها
+            </h3>
             <hr>
             <div class="hide-scrollbar" style="display: grid;
 grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

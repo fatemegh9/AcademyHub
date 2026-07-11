@@ -424,6 +424,35 @@
     z-index: 30;
 }
 
+.activity-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.activity-card-title .stat-icon img {
+    width: 24px;
+    height: 24px;
+}
+
+.empty-tab-box {
+    max-width: 500px;
+    margin: 30px auto;
+    padding: 24px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.empty-tab-text {
+    margin: 0;
+    color: #6b7280;
+    font-size: 16px;
+    font-weight: 500;
+}
+
 .note-actions.show { display: block; }
 .note-actions a { display: block; padding: 10px 14px; text-decoration: none; color: #111827; font-size: 14px; }
 .note-actions a:hover { background: #f3f4f6; }
@@ -507,7 +536,10 @@
     <div class="activity-col">
         <div class="activity-card">
             <div class="activity-card-title">
-                📊 نقشه فعالیت
+                <span class="stat-icon">
+                    <img src="{% static 'icons/gala--chart.svg' %}" alt="Chart">
+                </span>
+                نقشه فعالیت
                 <span>یک سال گذشته</span>
             </div>
 
@@ -587,9 +619,15 @@
         {% empty %}
         <div class="empty-tab-state">
             <i class="fa-solid fa-camera empty-tab-icon"></i>
-            <p class="empty-tab-text">
-                {% if is_owner %}هنوز پستی منتشر نکرده‌ای{% else %}این کاربر هنوز پستی منتشر نکرده{% endif %}
+            <div class="empty-tab-box">
+            <p class="empty-tab-text mb-0">
+                {% if is_owner %}
+                    هنوز پستی منتشر نکرده‌ای
+                {% else %}
+                    این کاربر هنوز پستی منتشر نکرده
+                {% endif %}
             </p>
+        </div>
         </div>
         {% endfor %}
     </div>

@@ -275,6 +275,17 @@
     height:18px;
     display:block;
 }
+
+.empty-box {
+    max-width: 500px;
+    margin: 40px auto;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid #b6effb;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
 .stat-value { font-size: 22px; font-weight: bold; }
 .stat-label { font-size: 13px; opacity: .8; }
 
@@ -361,7 +372,7 @@
             </div>
         </div>
         {% empty %}
-        <div class="col"><div class="alert alert-info">هیچ جزوه‌ای ذخیره نکرده‌اید.</div></div>
+        <div class="col"><div class="alert alert-info empty-box">هیچ جزوه‌ای ذخیره نکرده‌اید.</div></div>
         {% endfor %}
     </div>
 </div>
@@ -410,7 +421,7 @@
             </div>
         </div>
         {% empty %}
-        <div class="col"><div class="alert alert-info">هیچ پستی ذخیره نکرده‌اید.</div></div>
+        <div class="col"><div class="alert alert-info empty-box">هیچ پستی ذخیره نکرده‌اید.</div></div>
         {% endfor %}
     </div>
 </div>
