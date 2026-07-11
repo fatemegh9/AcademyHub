@@ -276,17 +276,18 @@
 
 <div class="upload-note-wrapper">
     <a href="{% url 'upload_note' %}" class="upload-note-btn">
-        <div>
-            <div class="upload-title">
-                <span class="stat-icon">
-                    <img src="{% static 'icons/mage--star.svg' %}" alt="Book">
-                </span>
-                آپلود جزوه جدید
-            </div>
-            <div class="upload-subtitle">
-                جزوه‌هات رو با بقیه دانشجوها به اشتراک بذار
-            </div>
-        </div>
+        <div class="upload-header">
+    <div class="upload-title">
+        <span class="stat-icon">
+            <img src="{% static 'icons/mage--star.svg' %}" alt="Book">
+        </span>
+        <span>آپلود جزوه جدید</span>
+    </div>
+
+    <div class="upload-subtitle">
+        جزوه‌هات رو با بقیه دانشجوها به اشتراک بذار
+    </div>
+</div>
 
         <div class="upload-icon">
             <i class="fas fa-plus" style="color: #f5b400; font-size: 30px;"></i>
@@ -353,7 +354,7 @@
 
         <!-- باکس 1: محبوب‌ترین -->
         <div style="background:#1C3368; border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px white; margin-bottom: 20px;">
-            <h3 class="section-title" >
+            <h3 class="section-title" style="color:white;" >
                 <span class="stat-icon">
                     <img src="{% static 'icons/fluent-emoji-flat--fire.svg' %}" alt="Fire">
                 </span>
@@ -398,7 +399,7 @@ gap: 20px;">
 
         <!-- باکس 2: جدیدترین -->
         <div style="background:#1C3368; border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <h3 class="section-title">
+            <h3 class="section-title" style="color:white;">
                 <span class="stat-icon">
                     <img src="{% static 'icons/material.svg' %}" alt="New">
                 </span>
@@ -465,7 +466,7 @@ gap: 20px;">
                         </div>
                 </div>
                 {% empty %}
-                <p>هیچ جزوه‌ای وجود ندارد.</p>
+                <p style="color:white;">هیچ جزوه‌ای وجود ندارد.</p>
                 {% endfor %}
             </div>
 

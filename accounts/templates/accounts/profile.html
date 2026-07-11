@@ -430,27 +430,52 @@
     gap: 8px;
 }
 
+.activity-card-title .stat-icon {
+    margin: 0;
+    margin-left: 4px; /* چون سایت فارسیه */
+}
+
 .activity-card-title .stat-icon img {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
+    display: block;
+}
+
+.activity-card-title .title-text {
+    margin-left: 2px; /* فاصله خیلی کم بین آیکون و متن */
+    font-weight: 600;
+}
+
+.activity-card-title .period {
+    margin-right: auto; /* متن "یک سال گذشته" بره سمت چپ */
+    font-size: 13px;
+    color: #999;
 }
 
 .empty-tab-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* فاصله کم بین آیکون و متن */
     max-width: 500px;
     margin: 30px auto;
-    padding: 24px;
+    padding: 18px 22px;
     background: #fff;
     border: 1px solid #e5e7eb;
     border-radius: 14px;
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+
+.empty-tab-icon {
+    font-size: 20px;
+    color: #6b7280;
+    flex-shrink: 0;
 }
 
 .empty-tab-text {
     margin: 0;
     color: #6b7280;
     font-size: 16px;
-    font-weight: 500;
 }
 
 .note-actions.show { display: block; }
@@ -539,8 +564,8 @@
                 <span class="stat-icon">
                     <img src="{% static 'icons/gala--chart.svg' %}" alt="Chart">
                 </span>
-                نقشه فعالیت
-                <span>یک سال گذشته</span>
+                <span class="title-text">نقشه فعالیت</span>
+                <span class="period">یک سال گذشته</span>
             </div>
 
             <div class="activity-grid" id="activityGrid"></div>
@@ -618,17 +643,18 @@
         </div>
         {% empty %}
         <div class="empty-tab-state">
-            <i class="fa-solid fa-camera empty-tab-icon"></i>
-            <div class="empty-tab-box">
-            <p class="empty-tab-text mb-0">
-                {% if is_owner %}
-                    هنوز پستی منتشر نکرده‌ای
-                {% else %}
-                    این کاربر هنوز پستی منتشر نکرده
-                {% endif %}
-            </p>
-        </div>
-        </div>
+    <div class="empty-tab-box">
+        <i class="fa-solid fa-camera empty-tab-icon"></i>
+
+        <p class="empty-tab-text mb-0">
+            {% if is_owner %}
+                هنوز پستی منتشر نکرده‌ای
+            {% else %}
+                این کاربر هنوز پستی منتشر نکرده
+            {% endif %}
+        </p>
+    </div>
+</div>
         {% endfor %}
     </div>
 </div>
@@ -654,11 +680,18 @@
         </div>
         {% empty %}
         <div class="empty-tab-state">
-            <i class="fa-solid fa-book empty-tab-icon"></i>
-            <p class="empty-tab-text">
-                {% if is_owner %}هنوز جزوه‌ای آپلود نکرده‌ای{% else %}این کاربر هنوز جزوه‌ای آپلود نکرده{% endif %}
-            </p>
-        </div>
+    <div class="empty-tab-box">
+        <i class="fa-solid fa-book empty-tab-icon"></i>
+
+        <p class="empty-tab-text mb-0">
+            {% if is_owner %}
+                هنوز جزوه‌ای آپلود نکرده‌ای
+            {% else %}
+                این کاربر هنوز جزوه‌ای آپلود نکرده
+            {% endif %}
+        </p>
+    </div>
+</div>
         {% endfor %}
     </div>
 </div>
