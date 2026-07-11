@@ -519,7 +519,13 @@ gap: 20px;">
         
         <!-- باکس جستجو -->
         <div style="background: radial-gradient(circle, #2956b2, #122248); border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px white; margin-bottom: 20px;">
-            <h5 style="color:white;">🔍 جستجو</h5>
+            <h5 class="section-title" style="color:white;">
+                <span class="stat-icon">
+                    <img src="{% static 'icons/icon-park-outline--search.svg' %}" alt="Search">
+                </span>
+                جستجو
+            </h5>
+
             <hr>
             <form method="get" action="{% url 'note_list' %}">
                 <input type="text" name="q" value="{{ search_query }}" placeholder="عنوان، درس، استاد..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px;">
@@ -530,7 +536,12 @@ gap: 20px;">
         <!-- باکس رشته‌ها -->
         <!-- باکس فیلترها -->
 <div style="background: radial-gradient(circle, #2956b2, #122248); border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px white; margin-bottom: 20px;">
-    <h5 style="color:white;">🔍 فیلترهای پیشرفته</h5>
+    <h5 class="section-title" style="color:white;">
+        <span class="stat-icon">
+            <img src="{% static 'icons/icon-park-outline--search.svg' %}" alt="Search">
+        </span>
+        فیلترهای پیشرفته
+    </h5>
     <hr>
     <form method="get" action="{% url 'note_list' %}">
         <!-- حفظ مقدار جستجو -->
