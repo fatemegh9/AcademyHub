@@ -53,14 +53,15 @@ def note_list(request):
 
     # دسته‌بندی‌ها
     most_popular = (
-    Note.objects
-    .annotate(
-        avg_rating=Coalesce(
-            Avg('ratings__score'),
-            0.0),
-            ratings_count=Count('ratings')
-    )
-    .order_by('-avg_rating', '-ratings_count')
+        Note.objects
+        .annotate(
+            avg_rating=Coalesce(
+                Avg('ratings__score'),
+                0.0),
+                ratings_count=Count('ratings')
+        )
+        .filter(ratings_count__gt=0)
+        .order_by('-avg_rating', '-ratings_count')[:10]
 )
     newest = notes.order_by('-created_at')[:10]
     
