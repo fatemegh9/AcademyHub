@@ -298,6 +298,18 @@
     font-size: 14px;
 }
 
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 6px; /* فاصله کم بین آیکون و متن */
+}
+
+.section-title .stat-icon img {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
+
 </style>
 
 <div class="upload-note-wrapper">
@@ -305,7 +317,7 @@
         <div class="upload-header">
     <div class="upload-title">
         <span class="stat-icon">
-            <img src="{% static 'icons/mage--star.svg' %}" alt="Book">
+            <img src="{% static 'icons/note.svg' %}" alt="Book">
         </span>
         <span>آپلود جزوه جدید</span>
     </div>
@@ -335,8 +347,11 @@
             box-shadow:0 1px 3px white;
         ">
 
-            <h3 style="color:white;">
-                🔍 نتایج جستجو  
+            <h3 class="section-title" style="color:white;">
+                <span class="stat-icon">
+                    <img src="{% static 'icons/icon-park-outline--search.svg' %}" alt="Search">
+                </span>
+                نتایج جستجو
             </h3>
 
             <hr>
