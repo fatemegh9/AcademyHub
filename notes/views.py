@@ -64,6 +64,16 @@ def note_list(request):
         .order_by('-avg_rating', '-ratings_count')[:10]
 )
     newest = notes.order_by('-created_at')[:10]
+
+    if request.user.is_authenticated:
+        all_note_ids = [n.id for n in newest] + [n.id for n in most_popular]
+        user_ratings = dict(
+            NoteRating.objects
+            .filter(user=request.user, note_id__in=all_note_ids)
+            .values_list('note_id', 'score')
+        )
+    else:
+        user_ratings = {}
     
     
     # لیست رشته‌های موجود
@@ -79,6 +89,8 @@ def note_list(request):
         'selected_level': level_filter,
         'selected_type': type_filter,
         'selected_university': university_filter,
+        'user_ratings': user_ratings,
+
     }
     return render(request, 'notes/note_list.html', context)
 
@@ -159,16 +171,22 @@ def delete_note(request, note_id):
 
 @login_required
 def rate_note(request, note_id, score):
-
     note = get_object_or_404(Note, id=note_id)
+    score = int(score)
 
-    NoteRating.objects.update_or_create(
-        note=note,
-        user=request.user,
-        defaults={
-            'score': score
-        }
-    )
+    existing = NoteRating.objects.filter(note=note, user=request.user).first()
+
+    if existing and existing.score == score:
+        # کلیک روی همون ستاره‌ای که قبلاً زده بود => امتیاز حذف میشه
+        existing.delete()
+        messages.info(request, 'امتیاز شما حذف شد.')
+    else:
+        NoteRating.objects.update_or_create(
+            note=note,
+            user=request.user,
+            defaults={'score': score}
+        )
+        messages.success(request, 'امتیاز شما ثبت شد.')
 
     return redirect('note_list')
 
