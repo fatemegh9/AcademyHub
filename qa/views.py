@@ -100,6 +100,15 @@ def delete_question(request, question_id):
 
 
 @login_required
+def delete_answer(request, answer_id):
+    answer = get_object_or_404(Answer, id=answer_id, user=request.user)
+    question_id = answer.question.id
+    answer.delete()
+    messages.success(request, 'پاسخ حذف شد.')
+    return redirect('question_detail', question_id=question_id)
+
+
+@login_required
 def vote_answer(request, answer_id):
     answer = get_object_or_404(Answer, id=answer_id)
     vote = Vote.objects.filter(user=request.user, answer=answer).first()
@@ -129,3 +138,4 @@ def add_answer(request, question_id):
 
             messages.success(request, 'پاسخ شما ثبت شد.')
     return redirect('question_detail', question_id=question.id)
+
