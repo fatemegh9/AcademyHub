@@ -9,7 +9,7 @@ class User(AbstractUser):
     upload_to='profiles/', 
     blank=True, 
     null=True,
-    default='profiles/default.png'  
+    default='media/profiles/default.png'   
 )
     university = models.CharField(
         max_length=200,
