@@ -3,6 +3,7 @@ from django.conf import settings
 from django.utils.text import slugify
 import re
 from django.db.models import Avg
+from cloudinary_storage.storage import RawMediaCloudinaryStorage
 
 
 class Tag(models.Model):
@@ -22,7 +23,7 @@ class Note(models.Model):
     description = models.TextField()
     lesson_name = models.CharField(max_length=100)
     professor_name = models.CharField(max_length=100, blank=True)
-    file = models.FileField(upload_to='notes/')
+    file = models.FileField(upload_to='notes/', storage=RawMediaCloudinaryStorage())
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     downloads_count = models.IntegerField(default=0)

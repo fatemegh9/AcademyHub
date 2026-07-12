@@ -254,7 +254,7 @@ def get_note_json(request, note_id):
 def summarize_note_view(request, note_id):
     note = get_object_or_404(Note, id=note_id)
 
-    text = extract_text_from_pdf(note.file.path)
+    text = extract_text_from_pdf(note.file.url)
 
     if not text:
         return JsonResponse({'error': 'متن جزوه قابل استخراج نیست.'}, status=400)
@@ -272,7 +272,7 @@ def ask_note_view(request, note_id):
         if not question:
             return JsonResponse({'error': 'سوالی وارد نشده.'}, status=400)
 
-        text = extract_text_from_pdf(note.file.path)
+        text = extract_text_from_pdf(note.file.url)
         if not text:
             return JsonResponse({'error': 'متن جزوه قابل استخراج نیست.'}, status=400)
 
@@ -285,7 +285,7 @@ def ask_note_view(request, note_id):
 def generate_quiz_view(request, note_id):
     note = get_object_or_404(Note, id=note_id)
 
-    text = extract_text_from_pdf(note.file.path)
+    text = extract_text_from_pdf(note.file.url)
     if not text:
         return JsonResponse({'error': 'متن جزوه قابل استخراج نیست.'}, status=400)
 

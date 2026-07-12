@@ -1,4 +1,6 @@
 import pypdf
+import requests
+import io
 from openai import OpenAI
 from django.conf import settings
 
@@ -8,11 +10,15 @@ client = OpenAI(
 )
 
 
-def extract_text_from_pdf(file_path, max_chars=15000):
-    """متن رو از فایل PDF استخراج می‌کند"""
+def extract_text_from_pdf(file_url, max_chars=15000):
+    """متن رو از فایل PDF (که رو Cloudinary یا هر جای دیگه‌ای هست) استخراج می‌کند"""
     text = ""
     try:
-        reader = pypdf.PdfReader(file_path)
+        response = requests.get(file_url, timeout=15)
+        response.raise_for_status()
+        pdf_bytes = io.BytesIO(response.content)
+
+        reader = pypdf.PdfReader(pdf_bytes)
         for page in reader.pages:
             text += page.extract_text() or ""
             if len(text) > max_chars:
