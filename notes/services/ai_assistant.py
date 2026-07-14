@@ -5,9 +5,11 @@ from openai import OpenAI
 from django.conf import settings
 
 client = OpenAI(
-    api_key=settings.AVALAI_API_KEY,
-    base_url=settings.AVALAI_BASE_URL,
+    api_key=settings.GROQ_API_KEY,
+    base_url="https://api.groq.com/openai/v1",
 )
+
+GROQ_MODEL = "llama-3.3-70b-versatile"
 
 
 def extract_text_from_pdf(file_url, max_chars=15000):
@@ -35,7 +37,7 @@ def summarize_note(note_text):
 {note_text}
 """
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model=GROQ_MODEL,
         messages=[{"role": "user", "content": prompt}],
     )
     return response.choices[0].message.content
@@ -52,7 +54,7 @@ def ask_question_about_note(note_text, question):
 {question}
 """
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model=GROQ_MODEL,
         messages=[{"role": "user", "content": prompt}],
     )
     return response.choices[0].message.content
@@ -74,7 +76,7 @@ def generate_quiz_from_note(note_text, num_questions=5):
 {note_text}
 """
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model=GROQ_MODEL,
         messages=[{"role": "user", "content": prompt}],
     )
     return response.choices[0].message.content

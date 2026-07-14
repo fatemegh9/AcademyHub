@@ -166,8 +166,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-AVALAI_API_KEY = os.environ.get('AVALAI_API_KEY')
-AVALAI_BASE_URL = os.environ.get('AVALAI_BASE_URL')
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 #STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
